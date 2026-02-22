@@ -1,6 +1,6 @@
 import random
 
-def SelectionSort(ar, size: int):
+def SelectionSort(ar, size):
     for i in range(size-1):
         temp = i
         for j in range(i+1, size):
@@ -66,9 +66,7 @@ def MergeSort(ar, left, right):
         MergeSort(ar, left, mid)
         MergeSort(ar, mid + 1, right)
         merge(ar, left, mid, right)
-    print("Your array now sorted!")
-    print(ar)
-
+    
 def InsertSort(ar, size):
     for i in range(1, size):
         key = ar[i]
@@ -80,38 +78,42 @@ def InsertSort(ar, size):
     print("Your array now sorted!")
     print(ar)
 
-def ArrGen(size: int):
+def ArrGen(size):
     ar = [0]*size
     for i in range(size):
         ar[i] = random.randint(1,20)
+    print("Your new array:")
     print(ar)
     ChooseSort(ar,size)
 
-def ArrMan(size: int):
+def ArrMan(size):
     ar = [0]*size
     for i in range(size):
-        ar[i] = int(input(f"Element num {i+1}"))
+        ar[i] = int(input(f"Element num {i+1}: "))
     ChooseSort(ar,size)
 
 def ChooseSort(ar, size):
-    choice = input("Now choose sorting alghorithm:\ns - selection sort\nb - bubble sort\nm - merge sort\ni - insert sort\n").lower
-    if choice == 's':
+    choice = input("Now choose sorting alghorithm:\ns - selection sort\nb - bubble sort\nm - merge sort\ni - insert sort\n")
+    
+    if choice == 's' or choice == 'S':
         SelectionSort(ar, size)
-    if choice == 'b':
+    elif choice == 'b' or choice == 'B':
         BubbleSort(ar, size)
-    if choice == 'm':
-        MergeSort(ar, 0, size)
-    if choice == 'i':
+    elif choice == 'm' or choice == 'M':
+        MergeSort(ar, 0, size - 1)
+        print("Your array now sorted!")
+        print(ar)
+    elif choice == 'i' or choice == 'I':
         InsertSort(ar, size)
     else:
         print("Wrong option")
 
 def Program():
     size = int(input("Enter size of an array: "))
-    option = input("Should we generate array(y), or enter it manually(n)? [y/n]: ")
-    if option == 'Y' or 'y':
+    option = input("Should we generate arra(y), or enter it ma(n)ually? [y/n]: ")
+    if option == 'y' or option == 'Y':
         ArrGen(size)
-    elif option == 'n' or 'N':
+    elif option == 'n' or option == 'N':
         ArrMan(size)
     else:
-        print("Wrong option")
+        print("Invalid option selected.")

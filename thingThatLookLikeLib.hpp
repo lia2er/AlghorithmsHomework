@@ -1,6 +1,4 @@
 #pragma once
-#include <algorithm>
-#include <cctype>
 #include <cstdlib>
 #include <format>
 #include <iostream>
@@ -29,7 +27,6 @@ void SelectionSort(int ar[], int size){
 }
 
 void merge(int ar[], int left, int mid, int right){
-                       
   int n1 = mid - left + 1;
   int n2 = right - mid;
 
@@ -64,7 +61,6 @@ void merge(int ar[], int left, int mid, int right){
     j++;
     k++;
   }
-
 }
 
 void MergeSort(int ar[], int left, int right){
@@ -75,7 +71,6 @@ void MergeSort(int ar[], int left, int right){
   MergeSort(ar, left, mid);
   MergeSort(ar, mid + 1, right);
   merge(ar, left, mid, right);
-  PrintArray(ar, right, true);
 }
 
 void BubbleSort(int ar[], int size){
@@ -110,7 +105,9 @@ void ChooseSort(int ar[], int size){
   cout << "Now choose sorting alghorithm:\ns - selection sort\nb - bubble sort\nm - merge sort\ni - insert sort\n";
   char choice;
   cin >> choice;
-  tolower(choice);
+  
+  choice = (char)tolower(choice);
+  
   switch (choice) {
     case 's':
       SelectionSort(ar, size);
@@ -120,6 +117,7 @@ void ChooseSort(int ar[], int size){
       break;
     case 'm':
       MergeSort(ar, 0, size-1);
+      PrintArray(ar, size, true); 
       break;
     case 'i':
       InsertSort(ar,size);
@@ -134,8 +132,10 @@ void ArrGen(int size){
   int seed;
   cin >> seed;
   srand(seed);
+  
   int ar[size];
   for(int i = 0; i<size; i++) ar[i] = rand()%20;
+  
   PrintArray(ar, size, false);
   ChooseSort(ar, size);
 }
@@ -157,7 +157,8 @@ void Exec(){
   cin >> size;
   cout << "Should we generate array(y), or enter it manually(n)? [y/n]: ";
   cin >> opt;
-  if(opt == 'y' or 'Y') ArrGen(size);
-  else if(opt == 'n' or 'N') HandTypeArr(size);
+  
+  if(opt == 'y' || opt == 'Y') ArrGen(size);
+  else if(opt == 'n' || opt == 'N') HandTypeArr(size);
   else cout << "Wrong option, bye!";
 }
