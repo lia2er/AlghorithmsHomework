@@ -13,13 +13,9 @@ def SelectionSort(ar, size):
 
 def BubbleSort(ar, size):
     for i in range(size):
-        swapped = False
         for j in range(0, size-i-1):
             if ar[j] > ar[j+1]:
                 ar[j], ar[j+1] = ar[j+1], ar[j]
-                swapped = True
-        if (swapped == False):
-            break
     print("Your array now sorted!")
     print(ar)
 
@@ -67,14 +63,43 @@ def MergeSort(ar, left, right):
         MergeSort(ar, mid + 1, right)
         merge(ar, left, mid, right)
     
-def InsertSort(ar, size):
-    for i in range(1, size):
-        key = ar[i]
-        j = i - 1
-        while j >= 0 and key < ar[j]:
-            ar[j + 1] = ar[j]
-            j -= 1
-        ar[j + 1] = key
+def PasteSort(ar, size):
+    for j in range(1, size):
+        for i in range(j):
+            el = ar[j]
+            if ar[i]>=el:
+                ar[j] = ar[i]
+                ar[i] = el
+    print("Your array now sorted!")
+    print(ar)
+
+def partition(ar, low, high):
+    pivot = ar[high]
+    i = low - 1
+    for j in range(low, high, 1):
+        if ar[j] <= pivot:
+            i += 1
+            ar[i], ar[j] = ar[j], ar[i]
+    ar[i+1], ar[high] = ar[high], ar[i+1]
+    return i+1
+
+def QuickSort(ar, low, high):
+    if low < high:
+        pivotIndex = partition(ar, low, high)
+        QuickSort(ar, low, pivotIndex - 1)
+        QuickSort(ar, pivotIndex + 1, high)
+            
+def ShellSort(ar, n):
+    gap = n // 2
+    while gap > 0:
+        for i in range(gap, n):
+            temp = ar[i]   
+            j = i
+            while j >= gap and ar[j - gap] > temp:
+                ar[j] = ar[j - gap]
+                j -= gap
+            ar[j] = temp
+        gap //= 2
     print("Your array now sorted!")
     print(ar)
 
@@ -84,27 +109,32 @@ def ArrGen(size):
         ar[i] = random.randint(1,20)
     print("Your new array:")
     print(ar)
-    ChooseSort(ar,size)
+    ChooseSortMethod(ar,size)
 
 def ArrMan(size):
     ar = [0]*size
     for i in range(size):
         ar[i] = int(input(f"Element num {i+1}: "))
-    ChooseSort(ar,size)
+    ChooseSortMethod(ar,size)
 
-def ChooseSort(ar, size):
-    choice = input("Now choose sorting alghorithm:\ns - selection sort\nb - bubble sort\nm - merge sort\ni - insert sort\n")
-    
-    if choice == 's' or choice == 'S':
+def ChooseSortMethod(ar, size):
+    choice = int(input("Now choose sorting alghorithm:\n1 - selection sort\n2 - bubble sort\n3 - merge sort\n4 - paste sort\n5 - quick sort\n6 - shell sort\n"))
+    if choice == 1:
         SelectionSort(ar, size)
-    elif choice == 'b' or choice == 'B':
+    elif choice == 2:
         BubbleSort(ar, size)
-    elif choice == 'm' or choice == 'M':
+    elif choice == 3:
         MergeSort(ar, 0, size - 1)
         print("Your array now sorted!")
         print(ar)
-    elif choice == 'i' or choice == 'I':
-        InsertSort(ar, size)
+    elif choice == 4:
+        PasteSort(ar, size)
+    elif choice == 5:
+        QuickSort(ar, 0, size - 1)
+        print("Your array now sorted!")
+        print(ar)
+    elif choice == 6:
+        ShellSort(ar, size)
     else:
         print("Wrong option")
 
