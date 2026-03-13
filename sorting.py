@@ -103,6 +103,43 @@ def ShellSort(ar, n):
     print("Your array now sorted!")
     print(ar)
 
+def ShakerSort(ar, n):
+    swapped = True
+    while swapped:
+        swapped = False
+        for i in range(n - 1):
+            if ar[i] > ar[i + 1]:
+                ar[i], ar[i + 1] = ar[i + 1], ar[i]
+                swapped = True
+        if not swapped:
+            break
+        swapped = False
+        for i in range(n - 1, 0, -1):
+            if ar[i - 1] > ar[i]:
+                ar[i - 1], ar[i] = ar[i], ar[i - 1]
+                swapped = True
+    print("Your array now sorted!")
+    print(ar)
+
+def heapify(arr, n, i):
+    largest = i
+    l = 2 * i + 1
+    r = 2 * i + 2
+    if l < n and arr[l] > arr[largest]:
+        largest = l
+    if r < n and arr[r] > arr[largest]:
+        largest = r
+    if largest != i:
+        arr[i], arr[largest] = arr[largest], arr[i]
+        heapify(arr, n, largest)
+
+def HeapSort(arr, n):
+    for i in range(n // 2 - 1, -1, -1):
+        heapify(arr, n, i)
+    for i in range(n - 1, 0, -1):
+        arr[0], arr[i] = arr[i], arr[0]
+        heapify(arr, i, 0)
+
 def ArrGen(size):
     ar = [0]*size
     for i in range(size):
@@ -118,7 +155,7 @@ def ArrMan(size):
     ChooseSortMethod(ar,size)
 
 def ChooseSortMethod(ar, size):
-    choice = int(input("Now choose sorting alghorithm:\n1 - selection sort\n2 - bubble sort\n3 - merge sort\n4 - paste sort\n5 - quick sort\n6 - shell sort\n"))
+    choice = int(input("Now choose sorting alghorithm:\n1 - selection sort\n2 - bubble sort\n3 - merge sort\n4 - paste sort\n5 - quick sort\n6 - shell sort\n7 - shaker sort\n8 - heap sort\n"))
     if choice == 1:
         SelectionSort(ar, size)
     elif choice == 2:
@@ -135,6 +172,12 @@ def ChooseSortMethod(ar, size):
         print(ar)
     elif choice == 6:
         ShellSort(ar, size)
+    elif choice == 7:
+        ShakerSort(ar, size)
+    elif choice == 8:
+        HeapSort(ar, size)
+        print("Your array now sorted!")
+        print(ar)
     else:
         print("Wrong option")
 

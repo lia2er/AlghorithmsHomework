@@ -133,8 +133,55 @@ void ShellSort(int ar[], int n){
   PrintArray(ar, n, true);
 }
 
+void ShakerSort(int ar[], int n){
+  bool swapped;
+  do {
+    swapped = false;
+    for(int i = 0; i < n - 1; i++){
+      if(ar[i] > ar[i+1]){
+        swap(ar[i], ar[i+1]);
+        swapped = true;
+      }
+    }
+    if(!swapped) break;
+    swapped = false;
+    for(int i = n-1; i > 0; --i){
+      if(ar[i-1] > ar[i]){
+        swap(ar[i-1], ar[i]);
+        swapped = true;
+      }
+    }
+  } while(swapped);
+  PrintArray(ar, n, true);
+}
+
+void heapify(int ar[], int n, int i){
+  int largest = i;
+  int left = 2 * i + 1; 
+  int right = 2 * i + 2;
+
+  if(left < n && ar[left] > ar[largest])
+    largest = left;
+  if(right < n && ar[right] > ar[largest])
+    largest = right;
+
+  if(largest != i){
+    swap(ar[i], ar[largest]);
+    heapify(ar, n, largest);
+  }
+}
+
+void HeapSort(int ar[], int n){
+  for(int i = n / 2 - 1; i >= 0; --i) 
+    heapify(ar, n, i);
+  for(int i = n - 1; i > 0; --i){
+    swap(ar[0], ar[i]);
+    heapify(ar, i, 0); 
+  }
+}
+
 void ChooseSortMethod(int ar[], int size){
-  cout << "Now choose sorting alghorithm:\n1 - selection sort\n2 - bubble sort\n3 - merge sort\n4 - paste sort\n5 - quick sort\n6 - shell sort\n";
+  cout << "Now choose sorting alghorithm:\n1 - selection sort\n2 - bubble sort\n3 - merge sort\n4 - paste sort\n5 - quick sort\n6 - shell sort\n7 - shaker sort\n8 - heap sort\n";
   int choice;
   cin >> choice;
   
@@ -158,6 +205,13 @@ void ChooseSortMethod(int ar[], int size){
       break;
     case 6:
       ShellSort(ar, size);
+      break;
+    case 7:
+      ShakerSort(ar, size);
+      break;
+    case 8:
+      HeapSort(ar, size);
+      PrintArray(ar, size, true);
       break;
     default:
       cout << "Wrong option";
