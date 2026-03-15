@@ -1,6 +1,4 @@
 #pragma once
-#include <algorithm>
-#include <cstdlib>
 #include <format>
 #include <iostream>
 #include <string>
@@ -180,76 +178,3 @@ void HeapSort(int ar[], int n){
   }
 }
 
-void ChooseSortMethod(int ar[], int size){
-  cout << "Now choose sorting alghorithm:\n1 - selection sort\n2 - bubble sort\n3 - merge sort\n4 - paste sort\n5 - quick sort\n6 - shell sort\n7 - shaker sort\n8 - heap sort\n";
-  int choice;
-  cin >> choice;
-  
-  switch (choice) {
-    case 1:
-      SelectionSort(ar, size);
-      break;
-    case 2:
-      BubbleSort(ar, size);
-      break;
-    case 3:
-      MergeSort(ar, 0, size-1);
-      PrintArray(ar, size, true); 
-      break;
-    case 4:
-      PasteSort(ar,size);
-      break;
-    case 5:
-      QuickSort(ar, 0, size-1);
-      PrintArray(ar, size, true); 
-      break;
-    case 6:
-      ShellSort(ar, size);
-      break;
-    case 7:
-      ShakerSort(ar, size);
-      break;
-    case 8:
-      HeapSort(ar, size);
-      PrintArray(ar, size, true);
-      break;
-    default:
-      cout << "Wrong option";
-  }
-}
-
-void ArrGen(int size){
-  cout << "Enter seed: ";
-  int seed;
-  cin >> seed;
-  srand(seed);
-  
-  int ar[size];
-  for(int i = 0; i<size; i++) ar[i] = rand()%20;
-  
-  PrintArray(ar, size, false);
-  ChooseSortMethod(ar, size);
-}
-
-void HandTypeArr(int size){
-  int ar[size];
-  cout<< "Now enter elements of array: \n";
-  for(int i = 0; i < size; i++){
-    cout << format("Element num {}: ", i+1);
-    cin >> ar[i];
-  }
-  ChooseSortMethod(ar, size);
-}
-
-void Exec(){
-  int size;
-  char opt;
-  cout << "Enter size of an array: ";
-  cin >> size;
-  cout << "Should we generate array(y), or enter it manually(n)? [y/n]: ";
-  cin >> opt;
-  
-  if(opt == 'y' || opt == 'Y') ArrGen(size);
-  else if(opt == 'n' || opt == 'N') HandTypeArr(size);
-  else cout << "Wrong option, bye!";
-}

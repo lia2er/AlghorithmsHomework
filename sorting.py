@@ -1,4 +1,5 @@
 import random
+from utility import *
 
 def SelectionSort(ar, size):
     for i in range(size-1):
@@ -140,53 +141,3 @@ def HeapSort(arr, n):
         arr[0], arr[i] = arr[i], arr[0]
         heapify(arr, i, 0)
 
-def ArrGen(size):
-    ar = [0]*size
-    for i in range(size):
-        ar[i] = random.randint(1,20)
-    print("Your new array:")
-    print(ar)
-    ChooseSortMethod(ar,size)
-
-def ArrMan(size):
-    ar = [0]*size
-    for i in range(size):
-        ar[i] = int(input(f"Element num {i+1}: "))
-    ChooseSortMethod(ar,size)
-
-def ChooseSortMethod(ar, size):
-    choice = int(input("Now choose sorting alghorithm:\n1 - selection sort\n2 - bubble sort\n3 - merge sort\n4 - paste sort\n5 - quick sort\n6 - shell sort\n7 - shaker sort\n8 - heap sort\n"))
-    if choice == 1:
-        SelectionSort(ar, size)
-    elif choice == 2:
-        BubbleSort(ar, size)
-    elif choice == 3:
-        MergeSort(ar, 0, size - 1)
-        print("Your array now sorted!")
-        print(ar)
-    elif choice == 4:
-        PasteSort(ar, size)
-    elif choice == 5:
-        QuickSort(ar, 0, size - 1)
-        print("Your array now sorted!")
-        print(ar)
-    elif choice == 6:
-        ShellSort(ar, size)
-    elif choice == 7:
-        ShakerSort(ar, size)
-    elif choice == 8:
-        HeapSort(ar, size)
-        print("Your array now sorted!")
-        print(ar)
-    else:
-        print("Wrong option")
-
-def Program():
-    size = int(input("Enter size of an array: "))
-    option = input("Should we generate arra(y), or enter it ma(n)ually? [y/n]: ")
-    if option == 'y' or option == 'Y':
-        ArrGen(size)
-    elif option == 'n' or option == 'N':
-        ArrMan(size)
-    else:
-        print("Invalid option selected.")
