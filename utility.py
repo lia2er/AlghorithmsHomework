@@ -30,12 +30,16 @@ def ChooseSortMethod(ar, size):
 
 def ChooseSearchMethod(ar, size):
     target = int(input("Enter our target: "))
-    choice = int(input("Now choose search method:\n1 - linear search\n2 - linear search with barrier\n $ "))
+    choice = int(input("Now choose search method:\n1 - linear search\n2 - linear search with barrier\n3 - binary search\n $ "))
     if choice == 1:
         result = LinearSearch(ar, size, target)
         CheckReturn(result, target)
     elif choice == 2:
         result = LinearSearchWithBarrier(ar, size, target)
+        CheckReturn(result, target)
+    elif choice == 3:
+        BubbleSort(ar, size)
+        result = BinarySearch(ar, size, target)
         CheckReturn(result, target)
     else:
         print("Wrong option")

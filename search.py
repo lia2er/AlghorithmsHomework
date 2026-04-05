@@ -16,6 +16,19 @@ def LinearSearchWithBarrier(ar, n, target):
     else:
         return -1
 
+def BinarySearch(ar, size, target):
+    left = 0
+    right = size - 1 
+    while left <= right:
+        mid = left + (right - left) / 2
+        if ar[mid] == target:
+            return mid
+        if ar[mid] < target:
+            left = mid + 1 
+        else:
+            right = mid - 1 
+    return -1
+
 def CheckReturn(result, target):
     if result != -1:
         print(f"Value {target} was found")

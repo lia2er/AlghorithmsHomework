@@ -22,6 +22,17 @@ int LinearSearchWithBarrier(int ar[], int n, int target){
   else return -1;
 }
 
+int BinarySearch(int ar[], int size, int target){
+  int left = 0,
+      right = size - 1;
+  while(left <= right){
+    int mid = left + (right - left) / 2;
+    if(ar[mid] == target) return mid;
+    if (ar[mid] < target) left = mid + 1;
+    else right = mid - 1;
+  }
+  return -1;
+}
 
 void CheckReturn(int result, int target){
   if(result != -1) cout << "Значення " << target << " знайдено" << endl;
