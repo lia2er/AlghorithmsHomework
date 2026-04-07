@@ -49,5 +49,8 @@ class HashMapTable{
     ~HashMapTable(){
       delete[] table;
     }
+    // зробити промальовку елементів таблиці key - value.
+    // maybe clay(c layout) or raylib
+    // for( i ) draw table[i] on x y z
 };
 
