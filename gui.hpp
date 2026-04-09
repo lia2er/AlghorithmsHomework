@@ -4,12 +4,15 @@
 #include <ranges>
 #include <vector>
 #include "sorting.hpp"
+#include "search.hpp"
+#include "utility.hpp"
 
 using namespace std;
 
 const int screenWidth = 800;
 const int screenHeight = 720;
 const int gap = 15;
+vector<int> output;
 
 const Color green = {0x98, 0x97, 0x1a, 255},
       yellow = {0xd7, 0x99, 0x21, 255},
@@ -19,9 +22,8 @@ const Color green = {0x98, 0x97, 0x1a, 255},
       gray = {0x50, 0x49, 0x45, 255},
       red = {0xcc, 0x24, 0x1d, 255};
 
-
+/*
 struct btn{
-  // maybe i should remake it to vertical alignment
   Rectangle Sorting = { 10, 10, 150, 50 };
   Rectangle Searching = { 170, 10, 150, 50 };
   Rectangle Hash = { 330, 10, 150, 50 };
@@ -36,18 +38,42 @@ struct btn{
   Rectangle Back = {};
   Rectangle GenerateArray = {};
   Rectangle DoIt = {HeapSort.x, HeapSort.y + gap, HeapSort.width, HeapSort.height};
-} btn;
+} btn;*/
+
+typedef struct Button {
+    Rectangle rect;
+    Color color;
+} Button;
+
+// One-line initializations: { {x, y, width, height}, color }
+Button button_Sorting       = { { 10, 10, 150, 50 }, gray };
+Button button_Searching     = { { 170, 10, 150, 50 }, gray };
+Button button_Hash          = { { 330, 10, 150, 50 }, gray };
+Button button_SelectionSort = { { 10, 70, 150, 50 }, gray };
+Button button_BubbleSort    = { { 10, 130, 150, 50 }, gray };
+Button button_MergeSort     = { { 10, 190, 150, 50 }, gray };
+Button button_PasteSort     = { { 10, 250, 150, 50 }, gray };
+Button button_QuickSort     = { { 10, 310, 150, 50 }, gray };
+Button button_ShellSort     = { { 10, 370, 150, 50 }, gray };
+Button button_ShakerSort    = { { 10, 430, 150, 50 }, gray };
+Button button_HeapSort      = { { 10, 490, 150, 50 }, gray };
+Button button_Back          = { { 0, 0, 0, 0 }, gray }; 
+Button button_GenerateArray = { { screenWidth - 160, 70, 150, 50 }, gray };
+Button button_DoIt          = { { button_HeapSort.rect.x, button_HeapSort.rect.y + gap, button_HeapSort.rect.width, button_HeapSort.rect.height }, gray };
+
 
 struct cntr{
   Rectangle Operation = { 0, 0, screenWidth, 70};
   Rectangle Action = { 0, 70, 170, screenHeight};
   Rectangle Back = {170, 70, screenWidth, screenHeight};
-  Rectangle TextBox = {190, 90, 400, 50};
+  Rectangle TextBox = {170, 70, screenWidth - 340, 50};
 } cntr;
 
-void ButtonDraw(int selected[]);
+void DrawThings(int selected[], Vector2 mouse);
 void ButtonLogic(int selected[], Vector2 mouse);
 vector<int> TextBox(Vector2 mouse);
+void DoThing(void (*funcPtr)());
+bool DrawButton(Button btn, Vector2 mouse, Color hoverColor, string text, bool isFocused);
 
 void GUI() {
 
@@ -59,10 +85,10 @@ void GUI() {
   selected[1] = -1;
   
   string input;
-  vector<int> output;
   while (!WindowShouldClose()) {
+
     Vector2 mouse = GetMousePosition();
-    ButtonLogic(selected, mouse);
+
 
     BeginDrawing();
     ClearBackground(RAYWHITE);
@@ -72,43 +98,45 @@ void GUI() {
     DrawRectangleRec(cntr.Action, black);
     DrawRectangleRec(cntr.Back, black2);
 
-    ButtonDraw(selected);
-
-    output = TextBox(mouse);
+    DrawThings(selected, mouse);
+    ButtonLogic(selected, mouse);
 
     EndDrawing();
   }
 
   CloseWindow();
-  size_t size = output.size();
-  cout << size << endl;
-  BubbleSort(output, size);
 }
 
 void ButtonLogic(int selected[], Vector2 mouse){
   // Operation buttons logic
-  if (CheckCollisionPointRec(mouse, btn.Sorting) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+  if (CheckCollisionPointRec(mouse, button_Sorting.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
     selected[0] = 0;
-  if (CheckCollisionPointRec(mouse, btn.Searching) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+    selected[1] = -1;
+  }
+  if (CheckCollisionPointRec(mouse, button_Searching.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
     selected[0] = 1;
-  if (CheckCollisionPointRec(mouse, btn.Hash) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+    selected[1] = -1;
+  }
+  if (CheckCollisionPointRec(mouse, button_Hash.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
     selected[0] = 2;
+    selected[1] = -1;
+  }
   // Action buttons logic
-  if (CheckCollisionPointRec(mouse, btn.SelectionSort) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+  if (CheckCollisionPointRec(mouse, button_SelectionSort.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     selected[1] = 0;
-  if (CheckCollisionPointRec(mouse, btn.BubbleSort) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+  if (CheckCollisionPointRec(mouse, button_BubbleSort.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     selected[1] = 1;
-  if (CheckCollisionPointRec(mouse, btn.PasteSort) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+  if (CheckCollisionPointRec(mouse, button_PasteSort.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     selected[1] = 2;
-  if (CheckCollisionPointRec(mouse, btn.MergeSort) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+  if (CheckCollisionPointRec(mouse, button_MergeSort.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     selected[1] = 3;
-  if (CheckCollisionPointRec(mouse, btn.QuickSort) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+  if (CheckCollisionPointRec(mouse, button_QuickSort.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     selected[1] = 4;
-  if (CheckCollisionPointRec(mouse, btn.ShakerSort) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+  if (CheckCollisionPointRec(mouse, button_ShakerSort.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     selected[1] = 5;
-  if (CheckCollisionPointRec(mouse, btn.ShellSort) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+  if (CheckCollisionPointRec(mouse, button_ShellSort.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     selected[1] = 6;
-  if (CheckCollisionPointRec(mouse, btn.HeapSort) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+  if (CheckCollisionPointRec(mouse, button_HeapSort.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     selected[1] = 7;
   
   // Actually coding actions
@@ -118,41 +146,35 @@ void ButtonLogic(int selected[], Vector2 mouse){
 
 }
 
-void ButtonDraw(int selected[]){
+void DrawThings(int selected[], Vector2 mouse){
   // Draw operation buttons
   // i could pass here button parameters to draw and react. instead of making a ton of draws for button manually, 
   // i could pass structure element to function calland everything would`ve worked
-  // maybe, void ButtonDraw(int selected[], char label[], struct btn.Some)
-	DrawRectangleRec(btn.Sorting, selected[0] == 0 ? blue : gray);
-  DrawRectangleRec(btn.Searching, selected[0] == 1 ? blue : gray);
-  DrawRectangleRec(btn.Hash, selected[0] == 2 ? blue : gray);
-
-  DrawText("Sorting", btn.Sorting.x + gap, btn.Sorting.y + gap, 20, WHITE);
-  DrawText("Searching", btn.Searching.x + gap, btn.Searching.y + gap, 20, WHITE);
-  DrawText("Hash Table", btn.Hash.x + gap, btn.Hash.y + gap, 20, WHITE);
+  // maybe, void ButtonDraw(int selected[], char label[], struct button_Some)
+  DrawButton(button_Sorting, mouse, selected[0] == 0 ? blue : gray, "Sorting", false);
+  DrawButton(button_Searching, mouse, selected[0] == 1 ? blue : gray, "Searching", false);
+  DrawButton(button_Hash, mouse, selected[0] == 2 ? blue : gray, "Hash", false);
   // Draw action buttons
   if (selected[0] == 0) {
-    DrawRectangleRec(btn.SelectionSort, selected[1] == 0 ? yellow : gray);
-    DrawRectangleRec(btn.BubbleSort, selected[1] == 1 ? yellow : gray);
-    DrawRectangleRec(btn.PasteSort, selected[1] == 2 ? yellow : gray);
-    DrawRectangleRec(btn.MergeSort, selected[1] == 3 ? yellow : gray);
-    DrawRectangleRec(btn.QuickSort, selected[1] == 4 ? yellow : gray);
-    DrawRectangleRec(btn.ShakerSort, selected[1] == 5 ? yellow : gray);
-    DrawRectangleRec(btn.ShellSort, selected[1] == 6 ? yellow : gray);
-    DrawRectangleRec(btn.HeapSort, selected[1] == 7 ? yellow : gray);
-
-    DrawText("Selection", btn.SelectionSort.x + gap, btn.SelectionSort.y + gap, 20, WHITE);
-    DrawText("Bubble", btn.BubbleSort.x + gap, btn.BubbleSort.y + gap, 20, WHITE);
-    DrawText("Paste", btn.PasteSort.x + gap, btn.PasteSort.y + gap, 20, WHITE);
-    DrawText("Merge", btn.MergeSort.x + gap, btn.MergeSort.y + gap, 20, WHITE);
-    DrawText("Quick", btn.QuickSort.x + gap, btn.QuickSort.y + gap, 20, WHITE);
-    DrawText("Shaker", btn.ShakerSort.x + gap, btn.ShakerSort.y + gap, 20, WHITE);
-    DrawText("Shell", btn.ShellSort.x + gap, btn.ShellSort.y + gap, 20, WHITE);
-    DrawText("Heap", btn.HeapSort.x + gap, btn.HeapSort.y + gap, 20, WHITE);
+    DrawButton(button_SelectionSort, mouse, selected[1] == 0 ? yellow : gray, "Selection", false);
+    DrawButton(button_BubbleSort, mouse, selected[1] == 1 ? yellow : gray, "Bubble", false);
+    DrawButton(button_PasteSort, mouse, selected[1] == 2 ? yellow : gray, "Paste", false);
+    DrawButton(button_MergeSort, mouse, selected[1] == 3 ? yellow : gray, "Merge", false);
+    DrawButton(button_QuickSort, mouse, selected[1] == 4 ? yellow : gray, "Quick", false);
+    DrawButton(button_ShakerSort, mouse, selected[1] == 5 ? yellow : gray, "Shaker", false);
+    DrawButton(button_ShellSort, mouse, selected[1] == 6 ? yellow : gray, "Shell", false);
+    DrawButton(button_HeapSort, mouse, selected[1] == 7 ? yellow : gray, "Heap", false);
   }
   else if (selected[0] == 1) {}
   else if (selected[0] == 2) {}
   else selected[1] = -1;
+
+
+  // draw text field if appropriate operations choosed
+  if ((selected[0] == 0 or selected[0] == 1) and selected[1] >= 0) {
+    output = TextBox(mouse);
+    bool isGeneratePressed = DrawButton(button_GenerateArray, mouse, yellow, "Generate", false);
+  }
 }
 
 void DoThing(void (*funcPtr)()){
@@ -177,7 +199,7 @@ vector<int> TextBox(Vector2 mouse) {
     
     int key = GetCharPressed();
     while (key > 0) {
-      if ((key >= 48) and (key <= 57) or (key == 32)) input += (char)key;
+      if ((key >= 48) and (key <= 57) or (key == 32) or (key == 45)) input += (char)key;
       key = GetCharPressed();
     }
 
@@ -194,14 +216,15 @@ vector<int> TextBox(Vector2 mouse) {
 
   DrawRectangleRec(cntr.TextBox, gray);
   
-  Color borderColor = (isFocused or CheckCollisionPointRec(mouse, cntr.TextBox)) ? green : red;
+  Color borderColor = (isFocused or CheckCollisionPointRec(mouse, cntr.TextBox)) ? green : gray;
   DrawRectangleLinesEx(cntr.TextBox, 2, borderColor);
 
-  DrawText(input.c_str(), (int)cntr.TextBox.x + 5, (int)cntr.TextBox.y + 8, 20, WHITE);
+  DrawText(input.c_str(), cntr.TextBox.x + gap, cntr.TextBox.y + gap, 20, WHITE);
+  if(input.empty()) DrawText("Input array here... or click \"Generate\"", cntr.TextBox.x + gap, cntr.TextBox.y + gap, 20, WHITE);
 
   if (isFocused && (framesCounter / 20) % 2 == 0) {
     int textWidth = MeasureText(input.c_str(), 20);
-    DrawRectangle(cntr.TextBox.x + 8 + textWidth, cntr.TextBox.y + 8, 2, 18, red);
+    DrawRectangle(cntr.TextBox.x + gap + textWidth, cntr.TextBox.y + gap, 2, 18, red);
   }
 
   if(!isFocused) {
@@ -214,3 +237,13 @@ vector<int> TextBox(Vector2 mouse) {
   }
   return output;
 }
+
+bool DrawButton(Button btn, Vector2 mouse, Color hoverColor, string text, bool isFocused=false) {
+  if(isFocused)
+    DrawRectangleRec(btn.rect, CheckCollisionPointRec(mouse, btn.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON)? hoverColor : btn.color);
+  else DrawRectangleRec(btn.rect, hoverColor);
+  DrawText(text.c_str(), btn.rect.x + gap, btn.rect.y + gap, 20, WHITE);
+  if(CheckCollisionPointRec(mouse, btn.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) return true;
+  else return false;
+}
+
