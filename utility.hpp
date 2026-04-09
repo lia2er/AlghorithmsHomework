@@ -1,10 +1,9 @@
 #pragma once
-#include "thingThatLookLikeLib.hpp"
+#include "sorting.hpp"
 #include "search.hpp"
 #include "hashTable.hpp"
 
 using namespace std;
-
 
 void ChooseSortMethod(int ar[], int size){
   cout << "Now choose sorting alghorithm:\n1 - selection sort\n2 - bubble sort\n3 - merge sort\n4 - paste sort\n5 - quick sort\n6 - shell sort\n7 - shaker sort\n8 - heap sort\n";

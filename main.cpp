@@ -1,15 +1,14 @@
-#include <cstdlib>
-#include <format>
 #include <iostream>
-#include <string>
-#include <utility>
-#include "thingThatLookLikeLib.hpp"
+#include "sorting.hpp"
 #include "utility.hpp"
+#include "gui.hpp"
 
 using namespace std;
 
+
 int main(){
-  Exec();
+  //Exec();
+  GUI();
   cout << "\n|\tРоботу виконав студент групи КІ-22\n|\tМуравський Арсен\n\n";
   return 0;
 }
