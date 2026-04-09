@@ -12,7 +12,9 @@ using namespace std;
 const int screenWidth = 800;
 const int screenHeight = 720;
 const int gap = 15;
-vector<int> output;
+vector<int> parsedArray;
+string stringToParse;
+bool isTextFocused = false;
 
 const Color green = {0x98, 0x97, 0x1a, 255},
       yellow = {0xd7, 0x99, 0x21, 255},
@@ -59,14 +61,15 @@ Button button_ShakerSort    = { { 10, 430, 150, 50 }, gray };
 Button button_HeapSort      = { { 10, 490, 150, 50 }, gray };
 Button button_Back          = { { 0, 0, 0, 0 }, gray }; 
 Button button_GenerateArray = { { screenWidth - 160, 70, 150, 50 }, gray };
-Button button_DoIt          = { { button_HeapSort.rect.x, button_HeapSort.rect.y + gap, button_HeapSort.rect.width, button_HeapSort.rect.height }, gray };
+Button button_Run          = { { button_GenerateArray.rect.x, button_GenerateArray.rect.y + 60, button_GenerateArray.rect.width, button_GenerateArray.rect.height }, gray };
 
 
 struct cntr{
   Rectangle Operation = { 0, 0, screenWidth, 70};
   Rectangle Action = { 0, 70, 170, screenHeight};
-  Rectangle Back = {170, 70, screenWidth, screenHeight};
+  Rectangle Back = {0, 0, screenWidth, screenHeight};
   Rectangle TextBox = {170, 70, screenWidth - 340, 50};
+  Rectangle LabelBox = {170, 130, screenWidth - 340, 50};
 } cntr;
 
 void DrawThings(int selected[], Vector2 mouse);
@@ -74,6 +77,10 @@ void ButtonLogic(int selected[], Vector2 mouse);
 vector<int> TextBox(Vector2 mouse);
 void DoThing(void (*funcPtr)());
 bool DrawButton(Button btn, Vector2 mouse, Color hoverColor, string text, bool isFocused);
+bool CheckCollisionClick(Vector2 mouse, Button button);
+bool GuiInputBox(Rectangle bounds, string& buffer, bool& isFocused);
+void DrawValueBox(Rectangle bounds, const char* label, const vector<int>& data, Color themeColor);
+vector<int> ParseStringToVector(const string& input);
 
 void GUI() {
 
@@ -89,17 +96,17 @@ void GUI() {
 
     Vector2 mouse = GetMousePosition();
 
-
     BeginDrawing();
     ClearBackground(RAYWHITE);
     
     // draw containers
+    DrawRectangleRec(cntr.Back, black2);
     DrawRectangleRec(cntr.Operation, black);
     DrawRectangleRec(cntr.Action, black);
-    DrawRectangleRec(cntr.Back, black2);
 
     DrawThings(selected, mouse);
     ButtonLogic(selected, mouse);
+
 
     EndDrawing();
   }
@@ -109,35 +116,27 @@ void GUI() {
 
 void ButtonLogic(int selected[], Vector2 mouse){
   // Operation buttons logic
-  if (CheckCollisionPointRec(mouse, button_Sorting.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
-    selected[0] = 0;
-    selected[1] = -1;
+  if (CheckCollisionClick(mouse, button_Sorting)) {
+      selected[0] = 0;
+      selected[1] = -1;
   }
-  if (CheckCollisionPointRec(mouse, button_Searching.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
-    selected[0] = 1;
-    selected[1] = -1;
+  if (CheckCollisionClick(mouse, button_Searching)) {
+      selected[0] = 1;
+      selected[1] = -1;
   }
-  if (CheckCollisionPointRec(mouse, button_Hash.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
-    selected[0] = 2;
-    selected[1] = -1;
+  if (CheckCollisionClick(mouse, button_Hash)) {
+      selected[0] = 2;
+      selected[1] = -1;
   }
   // Action buttons logic
-  if (CheckCollisionPointRec(mouse, button_SelectionSort.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-    selected[1] = 0;
-  if (CheckCollisionPointRec(mouse, button_BubbleSort.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-    selected[1] = 1;
-  if (CheckCollisionPointRec(mouse, button_PasteSort.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-    selected[1] = 2;
-  if (CheckCollisionPointRec(mouse, button_MergeSort.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-    selected[1] = 3;
-  if (CheckCollisionPointRec(mouse, button_QuickSort.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-    selected[1] = 4;
-  if (CheckCollisionPointRec(mouse, button_ShakerSort.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-    selected[1] = 5;
-  if (CheckCollisionPointRec(mouse, button_ShellSort.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-    selected[1] = 6;
-  if (CheckCollisionPointRec(mouse, button_HeapSort.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-    selected[1] = 7;
+  if (CheckCollisionClick(mouse, button_SelectionSort)) selected[1] = 0;
+  if (CheckCollisionClick(mouse, button_BubbleSort)) selected[1] = 1;
+  if (CheckCollisionClick(mouse, button_PasteSort)) selected[1] = 2;
+  if (CheckCollisionClick(mouse, button_MergeSort)) selected[1] = 3;
+  if (CheckCollisionClick(mouse, button_QuickSort)) selected[1] = 4;
+  if (CheckCollisionClick(mouse, button_ShakerSort)) selected[1] = 5;
+  if (CheckCollisionClick(mouse, button_ShellSort)) selected[1] = 6;
+  if (CheckCollisionClick(mouse, button_HeapSort)) selected[1] = 7;
   
   // Actually coding actions
   if (selected[0] == 0 and selected[1] == 0){}
@@ -172,8 +171,25 @@ void DrawThings(int selected[], Vector2 mouse){
 
   // draw text field if appropriate operations choosed
   if ((selected[0] == 0 or selected[0] == 1) and selected[1] >= 0) {
-    output = TextBox(mouse);
-    bool isGeneratePressed = DrawButton(button_GenerateArray, mouse, yellow, "Generate", false);
+    if (DrawButton(button_GenerateArray, mouse, yellow, "Generate", true))
+      parsedArray = ArrGenV();
+      
+    if(GuiInputBox(cntr.TextBox, stringToParse, isTextFocused))
+      parsedArray = ParseStringToVector(stringToParse);
+      
+    if(!parsedArray.empty())
+      DrawValueBox(cntr.LabelBox, "Output", parsedArray, green);
+      
+    if (DrawButton(button_Run, mouse, yellow, "Run", true) && !parsedArray.empty()) {
+      if (selected[1] == 0) SelectionSort(parsedArray, parsedArray.size());
+      if (selected[1] == 1) BubbleSort(parsedArray, parsedArray.size());
+      if (selected[1] == 2) PasteSort(parsedArray, parsedArray.size());
+      if (selected[1] == 3) MergeSort(parsedArray, 0, parsedArray.size() - 1);
+      if (selected[1] == 4) QuickSort(parsedArray, 0, parsedArray.size() - 1);
+      if (selected[1] == 5) ShakerSort(parsedArray, parsedArray.size());
+      if (selected[1] == 6) ShellSort(parsedArray, parsedArray.size());
+      if (selected[1] == 7) HeapSort(parsedArray, parsedArray.size());
+    }
   }
 }
 
@@ -181,69 +197,86 @@ void DoThing(void (*funcPtr)()){
   funcPtr();
 }
 
-vector<int> TextBox(Vector2 mouse) {
-  vector<int> output;
-  static string input = ""; 
-  static int framesCounter = 0;
-  static bool isFocused = false;
-
-  // 1. Handle Focusing
-  if (CheckCollisionPointRec(mouse, cntr.TextBox)) {
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) isFocused = true;
-  } else {
-    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) isFocused = false;
-  }
-
-  if (isFocused) {
-    SetMouseCursor(MOUSE_CURSOR_IBEAM);
-    
-    int key = GetCharPressed();
-    while (key > 0) {
-      if ((key >= 48) and (key <= 57) or (key == 32) or (key == 45)) input += (char)key;
-      key = GetCharPressed();
-    }
-
-    if (IsKeyPressed(KEY_BACKSPACE) and !input.empty()) {
-      input.pop_back();
-    }
-    framesCounter++;
-  } else {
-    if (!CheckCollisionPointRec(mouse, cntr.TextBox)) {
-      SetMouseCursor(MOUSE_CURSOR_DEFAULT);
-    }
-    framesCounter = 0;
-  }
-
-  DrawRectangleRec(cntr.TextBox, gray);
-  
-  Color borderColor = (isFocused or CheckCollisionPointRec(mouse, cntr.TextBox)) ? green : gray;
-  DrawRectangleLinesEx(cntr.TextBox, 2, borderColor);
-
-  DrawText(input.c_str(), cntr.TextBox.x + gap, cntr.TextBox.y + gap, 20, WHITE);
-  if(input.empty()) DrawText("Input array here... or click \"Generate\"", cntr.TextBox.x + gap, cntr.TextBox.y + gap, 20, WHITE);
-
-  if (isFocused && (framesCounter / 20) % 2 == 0) {
-    int textWidth = MeasureText(input.c_str(), 20);
-    DrawRectangle(cntr.TextBox.x + gap + textWidth, cntr.TextBox.y + gap, 2, 18, red);
-  }
-
-  if(!isFocused) {
-    int i;
-    auto split_view = input | views::split(' ');
-    for(auto&& part: split_view){
-      if(part.empty()) continue;
-      output.push_back(std::stoi(std::string(part.begin(), part.end())));
-    }
-  }
-  return output;
-}
-
 bool DrawButton(Button btn, Vector2 mouse, Color hoverColor, string text, bool isFocused=false) {
-  if(isFocused)
-    DrawRectangleRec(btn.rect, CheckCollisionPointRec(mouse, btn.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON)? hoverColor : btn.color);
-  else DrawRectangleRec(btn.rect, hoverColor);
+  bool isHovered = CheckCollisionPointRec(mouse, btn.rect);
+  bool isClicked = isHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
+  if(isFocused) DrawRectangleRec(btn.rect, isHovered ? hoverColor : btn.color);
+  else DrawRectangleRec(btn.rect, hoverColor); 
+  
   DrawText(text.c_str(), btn.rect.x + gap, btn.rect.y + gap, 20, WHITE);
-  if(CheckCollisionPointRec(mouse, btn.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) return true;
-  else return false;
+  return isClicked;
 }
 
+bool CheckCollisionClick(Vector2 mouse, Button button){
+  return CheckCollisionPointRec(mouse, button.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
+}
+
+void DrawValueBox(Rectangle bounds, const char* label, const vector<int>& data, Color themeColor) {
+    DrawRectangleRec(bounds, gray); 
+    DrawRectangleLinesEx(bounds, 2, themeColor);
+
+    string text = label;
+    text += ": ";
+    for (size_t i = 0; i < data.size(); i++) 
+        text += to_string(data[i]) + (i == data.size() - 1 ? "" : " ");
+
+    DrawText(text.c_str(), bounds.x + gap, bounds.y + gap, 20, WHITE);
+}
+
+bool GuiInputBox(Rectangle bounds, string& buffer, bool& isFocused) {
+    bool changed = false;
+    Vector2 mouse = GetMousePosition();
+    bool hovering = CheckCollisionPointRec(mouse, bounds);
+
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) isFocused = hovering;
+
+    if (isFocused) {
+        SetMouseCursor(MOUSE_CURSOR_IBEAM);
+        
+        int key = GetCharPressed();
+        while (key > 0) {
+            if ((key >= 48 && key <= 57) || key == 32 || key == 45) {
+                buffer += (char)key;
+                changed = true;
+            }
+            key = GetCharPressed();
+        }
+        if (IsKeyPressed(KEY_BACKSPACE) && !buffer.empty()) {
+            buffer.pop_back();
+            changed = true;
+        }
+    } else {
+        if (hovering) SetMouseCursor(MOUSE_CURSOR_IBEAM);
+        else SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+    }
+
+    DrawRectangleRec(bounds, gray); 
+    DrawRectangleLinesEx(bounds, 2, isFocused ? green : gray);
+
+    if (buffer.empty() && !isFocused) {
+        DrawText("Enter numbers divided by spaces...", bounds.x + gap, bounds.y + gap, 20, yellow);
+    } else {
+        DrawText(buffer.c_str(), bounds.x + gap, bounds.y + gap, 20, WHITE);
+    }
+
+    if (isFocused) {
+        int textWidth = MeasureText(buffer.c_str(), 20);
+        DrawRectangle(bounds.x + gap + textWidth, bounds.y + gap, 2, 20, blue);
+    }
+
+    return changed;
+}
+
+vector<int> ParseStringToVector(const string& input) {
+    vector<int> result;
+    auto split_view = input | views::split(' ');
+    for (auto&& part : split_view) {
+        string s(part.begin(), part.end());
+        if (!s.empty() && s != "-") {
+            try {
+                result.push_back(stoi(s));
+            } catch (...) { /* Skip invalid segments */ }
+        }
+    }
+    return result;
+}
