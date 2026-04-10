@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <raylib.h>
+#include <algorithm>
 
 using namespace std;
 
@@ -14,6 +15,8 @@ class HashMapTable{
     int T_S;
     vector<HashTableEntry> *table;
   public:
+    int foundBucket = -1;
+    int foundChain = -1;
     HashMapTable(int size=10){
       T_S = size;
       table = new vector<HashTableEntry>[T_S];
@@ -70,33 +73,47 @@ class HashMapTable{
       }
     }*/
     void Draw(int startX, int startY, Color gray, Color red, Color green) {
-      const int boxW = 50;
       const int boxH = 50;
       const int gap = 10;
-
+      const int fontSize = 20;
+    
       for (int i = 0; i < T_S; i++) {
         int bucketY = startY + (i * (boxH + gap));
-        DrawRectangleRec({(float)startX, (float)bucketY, boxW, boxH}, gray);
-        DrawRectangleLinesEx({(float)startX, (float)bucketY, boxW, boxH}, 2, green);
-        DrawText(TextFormat("[%d]", i), startX + gap + 5, bucketY + gap + 5, 20, WHITE);
-
-        int currentX = startX + boxW; 
-
+        
+        string indexLabel = "[" + to_string(i) + "]";
+        int indexTextWidth = MeasureText(indexLabel.c_str(), fontSize);
+        int bucketBoxW = std::max(50, indexTextWidth + (gap * 2)); 
+    
+        DrawRectangleRec({(float)startX, (float)bucketY, (float)bucketBoxW, (float)boxH}, gray);
+        DrawRectangleLinesEx({(float)startX, (float)bucketY, (float)bucketBoxW, (float)boxH}, 2, green);
+        
+        int indexTextX = startX + (bucketBoxW / 2) - (indexTextWidth / 2);
+        int indexTextY = bucketY + (boxH / 2) - (fontSize / 2);
+        DrawText(indexLabel.c_str(), indexTextX, indexTextY, fontSize, WHITE);
+    
+        int currentX = startX + bucketBoxW; 
+    
         for (const auto& entry : table[i]) {
+          string label = to_string(entry.key) + ":" + to_string(entry.value);
+          int textWidth = MeasureText(label.c_str(), fontSize);
+          int dynamicBoxW = std::max(50, textWidth + (gap * 2)); 
+    
           DrawLine(currentX, bucketY + boxH/2, currentX + gap, bucketY + boxH/2, red);
           currentX += gap;
-
-          Rectangle rec = {(float)currentX, (float)bucketY, (float)boxW, (float)boxH};
+    
+          Rectangle rec = {(float)currentX, (float)bucketY, (float)dynamicBoxW, (float)boxH};
           DrawRectangleRec(rec, gray);
           DrawRectangleLinesEx(rec, 2, green);
-
-          string label = to_string(entry.key) + ":" + to_string(entry.value);
-          DrawText(label.c_str(), currentX + gap, bucketY + gap, 20, WHITE);
-
-          currentX += boxW;
+    
+          int textX = currentX + (dynamicBoxW / 2) - (textWidth / 2);
+          int textY = bucketY + (boxH / 2) - (fontSize / 2);
+          DrawText(label.c_str(), textX, textY, fontSize, WHITE);
+    
+          currentX += dynamicBoxW;
         }
       }
     }
+    
     ~HashMapTable(){delete[] table;}
 
 };

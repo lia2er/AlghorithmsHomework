@@ -250,19 +250,20 @@ void DrawThings(int selected[], Vector2 mouse){
   if (selected[0] == 2 and selected[1] >= 0) {
     button_Run = button_GenerateArray;
     button_Run.rect.x = screenWidth - 150;
-    hashTable.Draw(170, 130, gray, yellow, green);
+    button_Run.rect.width = 140;
 
     if(GuiInputBox(container_HashKeyInputField, hashKeyString, isKeyFieldFocused, "Key") and !hashKeyString.empty())
       hashKeyInput = stoi(hashKeyString);
 
-    if(GuiInputBox(container_HashValueInputField, stringToParse, isValueFieldFocused, "Value") and !hashValueString.empty())
+    if(GuiInputBox(container_HashValueInputField, hashValueString, isValueFieldFocused, "Value") and !hashValueString.empty())
       hashValueInput = stoi(hashValueString);
+
+    hashTable.Draw(170, 130, gray, yellow, green);
       
     if (DrawButton(button_Run, mouse, yellow, "Run", true) and !hashKeyString.empty()) {
-      cout << "Pressed run" << endl;
       if (selected[1] == 0) hashTable.Insert(hashKeyInput, hashValueInput);
       if (selected[1] == 1) hashTable.Remove(hashKeyInput);
-      if (selected[1] == 2) hashTable.SearchKey(hashKeyInput);
+      if (selected[1] == 2) CheckReturnToString(hashTable.SearchKey(hashKeyInput), hashKeyInput);
     }
   }
 }
