@@ -35,7 +35,7 @@ int BinarySearch(int ar[], int size, int target){
 }
 
 void CheckReturn(int result, int target){
-  if(result != -1) cout << "Значення " << target << " знайдено" << endl;
+  if(result != -1) cout << "Значення " << target << " знайдено на позиції " << result + 1 << endl;
   else cout << "Значення " << target << " не знайдено у масиві" << endl;
 }
 
@@ -70,4 +70,9 @@ int BinarySearch(vector<int> ar, int size, int target){
     else right = mid - 1;
   }
   return -1;
+}
+
+string CheckReturnToString(int result, int target){
+  if(result != -1) return format("Значення {} знайдено на позиції {}\n", target, result + 1);
+  else return format("Значення {} не знайдено у масиві\n", target);
 }
