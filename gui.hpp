@@ -82,8 +82,9 @@ bool DrawButton(Button btn, Vector2 mouse, Color hoverColor, string text, bool i
 bool CheckCollisionClick(Vector2 mouse, Button button);
 bool CheckCollisionClick(Vector2 mouse, Container container);
 bool GuiInputBox(Container bounds, string& buffer, bool& isFocused, string label);
-void DrawValueBox(Container bounds, string label, vector<int>& data, Color themeColor);
+void DrawValueBox(Container bounds, string label, vector<int>& data, Color themeColor, bool isPlaceholder=false);
 vector<int> ParseStringToVector(string& input);
+void DrawLabelBox(Container bounds, string label, Color themeColor);
 
 void GUI() {
 
@@ -132,24 +133,30 @@ void ButtonLogic(int selected[], Vector2 mouse){
       selected[1] = -1;
   }
   // Sorting action buttons logic
-  if (CheckCollisionClick(mouse, button_SelectionSort)) selected[1] = 0;
-  if (CheckCollisionClick(mouse, button_BubbleSort)) selected[1] = 1;
-  if (CheckCollisionClick(mouse, button_PasteSort)) selected[1] = 2;
-  if (CheckCollisionClick(mouse, button_MergeSort)) selected[1] = 3;
-  if (CheckCollisionClick(mouse, button_QuickSort)) selected[1] = 4;
-  if (CheckCollisionClick(mouse, button_ShakerSort)) selected[1] = 5;
-  if (CheckCollisionClick(mouse, button_ShellSort)) selected[1] = 6;
-  if (CheckCollisionClick(mouse, button_HeapSort)) selected[1] = 7;
+  if (selected[0] == 0){
+    if (CheckCollisionClick(mouse, button_SelectionSort)) selected[1] = 0;
+    if (CheckCollisionClick(mouse, button_BubbleSort)) selected[1] = 1;
+    if (CheckCollisionClick(mouse, button_PasteSort)) selected[1] = 2;
+    if (CheckCollisionClick(mouse, button_MergeSort)) selected[1] = 3;
+    if (CheckCollisionClick(mouse, button_QuickSort)) selected[1] = 4;
+    if (CheckCollisionClick(mouse, button_ShakerSort)) selected[1] = 5;
+    if (CheckCollisionClick(mouse, button_ShellSort)) selected[1] = 6;
+    if (CheckCollisionClick(mouse, button_HeapSort)) selected[1] = 7;
+  }
   // Searching action buttons logic
-  if (CheckCollisionClick(mouse, button_LinearSearch)) selected[1] = 0;
-  if (CheckCollisionClick(mouse, button_LinearSearchWithBarrier)) selected[1] = 1;
-  if (CheckCollisionClick(mouse, button_BinarySearch)) selected[1] = 2;
+  if (selected[0] == 1){
+    if (CheckCollisionClick(mouse, button_LinearSearch)) selected[1] = 0;
+    if (CheckCollisionClick(mouse, button_LinearSearchWithBarrier)) selected[1] = 1;
+    if (CheckCollisionClick(mouse, button_BinarySearch)) selected[1] = 2;
+  }
   // Hash action buttons logic
-  if (CheckCollisionClick(mouse, button_HashInsert)) selected[1] = 0;
-  if (CheckCollisionClick(mouse, button_HashRemove)) selected[1] = 1;
-  if (CheckCollisionClick(mouse, button_HashSearch)) selected[1] = 2;
+  if (selected[0] == 2){
+    if (CheckCollisionClick(mouse, button_HashInsert)) selected[1] = 0;
+    if (CheckCollisionClick(mouse, button_HashRemove)) selected[1] = 1;
+    if (CheckCollisionClick(mouse, button_HashSearch)) selected[1] = 2;
+  }
   // Actually coding actions
-  if (selected[0] == 0 and selected[1] == 0){}
+
   // if (subSelected == 0 and pressedGenerateOrDoWorkButton) do SelectionSort
   // if (subSelected == 1 ...) ...
 
@@ -189,45 +196,41 @@ void DrawThings(int selected[], Vector2 mouse){
 
   // draw text field if appropriate operations choosed
   if (selected[0] == 0 and selected[1] >= 0) {
-    if (DrawButton(button_GenerateArray, mouse, yellow, "Generate", true))
+    if (DrawButton(button_GenerateArray, mouse, yellow, "Generate", true)){
       parsedArray = ArrGenV();
-
-    if (GuiInputBox(container_TextInputBox, stringToParse, isTextFocused, "Enter array here... or Generate it")) {
-      parsedArray = ParseStringToVector(stringToParse);
-      sortedArray = parsedArray;
     }
-      
-    if(!sortedArray.empty()) DrawValueBox(container_SortedArrayOutputLabelBox, "Sorted: ", sortedArray, green);
+    DrawValueBox(container_TextInputBox, "", parsedArray, yellow, true);
+    if(!sortedArray.empty()) DrawValueBox(container_SortedArrayOutputLabelBox, "", sortedArray, green);
 
     if (DrawButton(button_Run, mouse, yellow, "Run", true) && !parsedArray.empty()) {
-      if (selected[1] == 0) SelectionSort(parsedArray, parsedArray.size());
-      if (selected[1] == 1) BubbleSort(parsedArray, parsedArray.size());
-      if (selected[1] == 2) PasteSort(parsedArray, parsedArray.size());
-      if (selected[1] == 3) MergeSort(parsedArray, 0, parsedArray.size() - 1);
-      if (selected[1] == 4) QuickSort(parsedArray, 0, parsedArray.size() - 1);
-      if (selected[1] == 5) ShakerSort(parsedArray, parsedArray.size());
-      if (selected[1] == 6) ShellSort(parsedArray, parsedArray.size());
-      if (selected[1] == 7) HeapSort(parsedArray, parsedArray.size());
+      sortedArray = parsedArray;
+      if (selected[1] == 0) SelectionSort(sortedArray, sortedArray.size());
+      if (selected[1] == 1) BubbleSort(sortedArray, sortedArray.size());
+      if (selected[1] == 2) PasteSort(sortedArray, sortedArray.size());
+      if (selected[1] == 3) MergeSort(sortedArray, 0, sortedArray.size() - 1);
+      if (selected[1] == 4) QuickSort(sortedArray, 0, sortedArray.size() - 1);
+      if (selected[1] == 5) ShakerSort(sortedArray, sortedArray.size());
+      if (selected[1] == 6) ShellSort(sortedArray, sortedArray.size());
+      if (selected[1] == 7) HeapSort(sortedArray, sortedArray.size());
     }
   }
   if (selected[0] == 1 and selected[1] >= 0) {
     if (DrawButton(button_GenerateArray, mouse, yellow, "Generate", true))
       parsedArray = ArrGenV();
 
-    if (GuiInputBox(container_TextInputBox, stringToParse, isTextFocused, "Enter array here... or Generate it")) 
-      parsedArray = ParseStringToVector(stringToParse);
+    DrawValueBox(container_TextInputBox, "", parsedArray, yellow, true);
 
     if(GuiInputBox(container_TargetInputBox, stringSearchTarget, isTextFocused, "Enter target"))
       searchTarget = stoi(stringSearchTarget);
       
     if(!parsedArray.empty())
       if(searchTarget)
-        DrawValueBox(container_FoundTargetOutputLabelBox, FoundSearched, parsedArray, green);
+        DrawLabelBox(container_FoundTargetOutputLabelBox, FoundSearched, green);
 
     if (DrawButton(button_Run, mouse, yellow, "Run", true) && !parsedArray.empty()) {
-      if (selected[1] == 0) searchResult = LinearSearch(parsedArray, parsedArray.size(), searchTarget);
-      if (selected[1] == 1) searchResult = LinearSearchWithBarrier(parsedArray, parsedArray.size(), searchTarget);
-      if (selected[1] == 2) searchResult = BinarySearch(parsedArray, parsedArray.size(), searchTarget);
+      if (selected[1] == 0) searchResult = LinearSearch(sortedArray, sortedArray.size(), searchTarget);
+      if (selected[1] == 1) searchResult = LinearSearchWithBarrier(sortedArray, sortedArray.size(), searchTarget);
+      if (selected[1] == 2) searchResult = BinarySearch(sortedArray, sortedArray.size(), searchTarget);
     }
   }
   /*
@@ -271,16 +274,23 @@ bool CheckCollisionClick(Vector2 mouse, Container container){
   return CheckCollisionPointRec(mouse, container.rect) and IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
 }
 
-void DrawValueBox(Container bounds, string label, vector<int>& data, Color themeColor) {
+void DrawValueBox(Container bounds, string label, vector<int>& data, Color themeColor, bool isPlaceholder) {
     DrawRectangleRec(bounds.rect, gray); 
     DrawRectangleLinesEx(bounds.rect, 2, themeColor);
-
+    
+    if(isPlaceholder and data.empty()) DrawText("Click \"Generate\"", bounds.rect.x + gap, bounds.rect.y + gap, 20, WHITE);
     string text = label;
     text += "";
     for (size_t i = 0; i < data.size(); i++) 
         text += to_string(data[i]) + (i == data.size() - 1 ? "" : " ");
 
     DrawText(text.c_str(), bounds.rect.x + gap, bounds.rect.y + gap, 20, WHITE);
+}
+
+void DrawLabelBox(Container bounds, string label, Color themeColor) {
+    DrawRectangleRec(bounds.rect, gray); 
+    DrawRectangleLinesEx(bounds.rect, 2, themeColor);
+    DrawText(label.c_str(), bounds.rect.x + gap, bounds.rect.y + gap, 20, WHITE);
 }
 
 bool GuiInputBox(Container bounds, string& buffer, bool& isFocused, string label) {
