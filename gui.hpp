@@ -4,6 +4,7 @@
 #include <ranges>
 #include <vector>
 #include <format>
+#include "hashTable.hpp"
 #include "sorting.hpp"
 #include "search.hpp"
 #include "utility.hpp"
@@ -11,7 +12,7 @@
 using namespace std;
 
 const int screenWidth = 800;
-const int screenHeight = 720;
+const int screenHeight = 800;
 const int gap = 15;
 vector<int> parsedArray;
 vector<int> sortedArray;
@@ -21,6 +22,13 @@ int searchResult;
 string stringSearchTarget;
 string stringToParse;
 bool isTextFocused = false;
+HashMapTable hashTable(10);
+int hashKeyInput;
+int hashValueInput;
+string hashKeyString;
+string hashValueString;
+bool isKeyFieldFocused = false,
+     isValueFieldFocused = false;
 
 const Color green = {0x98, 0x97, 0x1a, 255},
       yellow = {0xd7, 0x99, 0x21, 255},
@@ -57,7 +65,6 @@ Button button_HashInsert = button_SelectionSort;
 Button button_HashRemove = button_BubbleSort;
 Button button_HashSearch = button_MergeSort;
 // action buttons
-Button button_Back          = { { 0, 0, 0, 0 }, gray }; 
 Button button_GenerateArray = { { screenWidth - 160, 70, 150, 50 }, gray };
 Button button_Run          = { { button_GenerateArray.rect.x, button_GenerateArray.rect.y + 60, button_GenerateArray.rect.width, button_GenerateArray.rect.height }, gray };
 
@@ -73,6 +80,8 @@ Container container_TextInputBox = {170, 70, screenWidth - 340, 50};
 Container container_TargetInputBox = {170, 130, 310, 50};
 Container container_SortedArrayOutputLabelBox = {170, 130, screenWidth - 340, 50};
 Container container_FoundTargetOutputLabelBox = {170, 190, screenWidth - 340, 50};
+Container container_HashKeyInputField = {170, 70, 150, 50};
+Container container_HashValueInputField = {container_HashKeyInputField.rect.x + 160, 70,  310, 50};
 
 void DrawThings(int selected[], Vector2 mouse);
 void ButtonLogic(int selected[], Vector2 mouse);
@@ -238,23 +247,24 @@ void DrawThings(int selected[], Vector2 mouse){
       if (selected[1] == 2) searchResult = BinarySearch(sortedArray, sortedArray.size(), searchTarget);
     }
   }
-  /*
   if (selected[0] == 2 and selected[1] >= 0) {
-    if (DrawButton(button_GenerateArray, mouse, yellow, "Generate", true))
-      parsedArray = ArrGenV();
+    button_Run = button_GenerateArray;
+    button_Run.rect.x = screenWidth - 150;
+    hashTable.Draw(170, 130, gray, yellow, green);
 
-    if(GuiInputBox(container_TextInputBox, stringToParse, isTextFocused, "Enter array here... or Generate it"))
-      parsedArray = ParseStringToVector(stringToParse);
+    if(GuiInputBox(container_HashKeyInputField, hashKeyString, isKeyFieldFocused, "Key") and !hashKeyString.empty())
+      hashKeyInput = stoi(hashKeyString);
+
+    if(GuiInputBox(container_HashValueInputField, stringToParse, isValueFieldFocused, "Value") and !hashValueString.empty())
+      hashValueInput = stoi(hashValueString);
       
-    if(!parsedArray.empty())
-      DrawValueBox(container_ArrayOutputLabelBox, "Output", parsedArray, green);
-      
-    if (DrawButton(button_Run, mouse, yellow, "Run", true) && !parsedArray.empty()) {
-      if (selected[1] == 0) SelectionSort(parsedArray, parsedArray.size());
-      if (selected[1] == 1) BubbleSort(parsedArray, parsedArray.size());
-      if (selected[1] == 2) PasteSort(parsedArray, parsedArray.size());
+    if (DrawButton(button_Run, mouse, yellow, "Run", true) and !hashKeyString.empty()) {
+      cout << "Pressed run" << endl;
+      if (selected[1] == 0) hashTable.Insert(hashKeyInput, hashValueInput);
+      if (selected[1] == 1) hashTable.Remove(hashKeyInput);
+      if (selected[1] == 2) hashTable.SearchKey(hashKeyInput);
     }
-  }*/
+  }
 }
 
 void DoThing(void (*funcPtr)()){

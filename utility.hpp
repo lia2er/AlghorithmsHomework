@@ -78,7 +78,7 @@ void DoHash(){
   cin >> size;
   HashMapTable hashTable(size);
   while(true){
-    cout << "Choose operation on hash table:\n1 - insert element\n2 - find an element\n3 - remove element\n4 - quit\t $ ";
+    cout << "Choose operation on hash table:\n1 - insert element\n2 - find an element\n3 - remove element\n4 - quit\n5 - print\n $ ";
     cin >> choice;
     switch(choice){
       case 1:
@@ -101,6 +101,9 @@ void DoHash(){
         hashTable.Remove(key);
         break;
       case 4:
+        return;
+      case 5:
+        hashTable.Display();
         break;
       default:
         cout << "Wrong option" << endl;
