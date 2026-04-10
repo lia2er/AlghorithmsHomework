@@ -73,6 +73,6 @@ int BinarySearch(vector<int> ar, int size, int target){
 }
 
 string CheckReturnToString(int result, int target){
-  if(result != -1) return format("Значення {} знайдено на позиції {}\n", target, result + 1);
-  else return format("Значення {} не знайдено у масиві\n", target);
+  if(result != -1) return format("Value {} was found at position {}\n", target, result + 1);
+  else return format("Value {} wasn`t found\n", target);
 }

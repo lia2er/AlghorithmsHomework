@@ -16,11 +16,11 @@ const int gap = 15;
 vector<int> parsedArray;
 vector<int> sortedArray;
 int searchTarget;
+int newSearchTarget;
 int searchResult;
 string stringSearchTarget;
 string stringToParse;
 bool isTextFocused = false;
-string FoundSearched = CheckReturnToString(searchResult, searchTarget);
 
 const Color green = {0x98, 0x97, 0x1a, 255},
       yellow = {0xd7, 0x99, 0x21, 255},
@@ -111,6 +111,7 @@ void GUI() {
     DrawThings(selected, mouse);
     ButtonLogic(selected, mouse);
 
+    DrawText("Made by @JFenn28Uu", screenWidth-120, screenHeight-20, 10, black);
 
     EndDrawing();
   }
@@ -215,19 +216,23 @@ void DrawThings(int selected[], Vector2 mouse){
     }
   }
   if (selected[0] == 1 and selected[1] >= 0) {
-    if (DrawButton(button_GenerateArray, mouse, yellow, "Generate", true))
+    if (DrawButton(button_GenerateArray, mouse, yellow, "Generate", true)){
       parsedArray = ArrGenV();
+      sortedArray = parsedArray;
+      BubbleSort(sortedArray, parsedArray.size());
+    }
 
-    DrawValueBox(container_TextInputBox, "", parsedArray, yellow, true);
+    DrawValueBox(container_TextInputBox, "", sortedArray, yellow, true);
 
-    if(GuiInputBox(container_TargetInputBox, stringSearchTarget, isTextFocused, "Enter target"))
+    if(GuiInputBox(container_TargetInputBox, stringSearchTarget, isTextFocused, "Enter target") and !stringSearchTarget.empty())
       searchTarget = stoi(stringSearchTarget);
       
     if(!parsedArray.empty())
-      if(searchTarget)
-        DrawLabelBox(container_FoundTargetOutputLabelBox, FoundSearched, green);
+      if(searchResult and newSearchTarget == searchTarget)
+        DrawLabelBox(container_FoundTargetOutputLabelBox, CheckReturnToString(searchResult, searchTarget), green);
 
     if (DrawButton(button_Run, mouse, yellow, "Run", true) && !parsedArray.empty()) {
+      newSearchTarget = searchTarget;
       if (selected[1] == 0) searchResult = LinearSearch(sortedArray, sortedArray.size(), searchTarget);
       if (selected[1] == 1) searchResult = LinearSearchWithBarrier(sortedArray, sortedArray.size(), searchTarget);
       if (selected[1] == 2) searchResult = BinarySearch(sortedArray, sortedArray.size(), searchTarget);
