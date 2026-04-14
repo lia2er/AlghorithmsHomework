@@ -15,8 +15,6 @@ class HashMapTable{
     int T_S;
     vector<HashTableEntry> *table;
   public:
-    int foundBucket = -1;
-    int foundChain = -1;
     HashMapTable(int size=10){
       T_S = size;
       table = new vector<HashTableEntry>[T_S];
