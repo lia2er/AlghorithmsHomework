@@ -1,2 +1,36 @@
 - Make generated arrays display in input field
 - Make visualisation or history of sorting
+
+void DrawList(Node* head, Vector2 startPos, Color themeColor) {
+    Node* current = head;
+    Vector2 cursor = startPos;
+
+    while (current != nullptr) {
+        // 1. Prepare the container for the current node
+        Rectangle rect = { cursor.x, cursor.y, nodeWidth, nodeHeight };
+        Container bounds = { rect }; // Using your Container struct
+        
+        // 2. Draw the box using your existing function
+        string label = to_string(current->data);
+        DrawLabelBox(bounds, label, themeColor);
+
+        // 3. Draw connections to the next node
+        if (current->next != nullptr) {
+            // Line for 'next' pointer (Top connection)
+            Vector2 startLine = { cursor.x + nodeWidth, cursor.y + 15 };
+            Vector2 endLine = { cursor.x + nodeWidth + horizontalSpacing, cursor.y + 15 };
+            DrawLineEx(startLine, endLine, 2, themeColor);
+            DrawTriangle({endLine.x, endLine.y}, {endLine.x - 5, endLine.y - 5}, {endLine.x - 5, endLine.y + 5}, themeColor);
+
+            // Line for 'prev' pointer (Bottom connection)
+            Vector2 startPrev = { cursor.x + nodeWidth + horizontalSpacing, cursor.y + 35 };
+            Vector2 endPrev = { cursor.x + nodeWidth, cursor.y + 35 };
+            DrawLineEx(startPrev, endPrev, 2, GRAY);
+            DrawTriangle({endPrev.x, endPrev.y}, {endPrev.x + 5, endPrev.y + 5}, {endPrev.x + 5, endPrev.y - 5}, GRAY);
+        }
+
+        // 4. Move the cursor to the right for the next element
+        cursor.x += (nodeWidth + horizontalSpacing);
+        current = current->next;
+    }
+}
