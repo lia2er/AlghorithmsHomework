@@ -11,6 +11,7 @@
 #include "search.hpp"
 #include "utility.hpp"
 #include "lists.hpp"
+#include "stack.hpp"
 
 using namespace std;
 
@@ -35,7 +36,8 @@ string hashKeyString;
 string hashValueString;
 bool isKeyFieldFocused = false,
      isValueFieldFocused = false;
-Node *mylist = nullptr;
+ListNode *mylist = nullptr;
+StackNode *StackNodeTop = nullptr;
 
 const Color green = {0x98, 0x97, 0x1a, 255},
       yellow = {0xd7, 0x99, 0x21, 255},
@@ -51,19 +53,20 @@ typedef struct Button {
 } Button;
 
 // One-line initializations: { {x, y, width, height}, color }
-Button button_Sorting       = { { 10, 10, 150, 50 }, gray };
-Button button_Searching     = { { 170, 10, 150, 50 }, gray };
-Button button_Hash          = { { 330, 10, 150, 50 }, gray };
+Button button_Sorting = { { 10, 10, 150, 50 }, gray };
+Button button_Searching = { { 170, 10, 150, 50 }, gray };
+Button button_Hash = { { 330, 10, 150, 50 }, gray };
 Button button_Lists = { {490, 10, 150, 50}, gray};
+Button button_Stack = { {550, 10, 150, 50}, gray};
 // sorting buttons
 Button button_SelectionSort = { { 10, 70, 150, 50 }, gray };
-Button button_BubbleSort    = { { 10, 130, 150, 50 }, gray };
-Button button_MergeSort     = { { 10, 190, 150, 50 }, gray };
-Button button_PasteSort     = { { 10, 250, 150, 50 }, gray };
-Button button_QuickSort     = { { 10, 310, 150, 50 }, gray };
-Button button_ShellSort     = { { 10, 370, 150, 50 }, gray };
-Button button_ShakerSort    = { { 10, 430, 150, 50 }, gray };
-Button button_HeapSort      = { { 10, 490, 150, 50 }, gray };
+Button button_BubbleSort = { { 10, 130, 150, 50 }, gray };
+Button button_MergeSort = { { 10, 190, 150, 50 }, gray };
+Button button_PasteSort = { { 10, 250, 150, 50 }, gray };
+Button button_QuickSort = { { 10, 310, 150, 50 }, gray };
+Button button_ShellSort = { { 10, 370, 150, 50 }, gray };
+Button button_ShakerSort = { { 10, 430, 150, 50 }, gray };
+Button button_HeapSort  = { { 10, 490, 150, 50 }, gray };
 // searching buttons
 Button button_LinearSearch = button_SelectionSort;
 Button button_LinearSearchWithBarrier = button_BubbleSort;
@@ -79,6 +82,10 @@ Button button_Run2 = button_GenerateArray;
 // list buttons
 Button button_ListInsert = button_SelectionSort;
 Button button_ListDeleteByValue = button_BubbleSort;
+// stack buttons
+Button button_StackPush = button_SelectionSort,
+       button_StackPop = button_BubbleSort,
+       button_StackPeek = button_MergeSort;
 
 typedef struct Container{
   Rectangle rect;
@@ -106,7 +113,9 @@ bool GuiInputBox(Container bounds, string& buffer, bool& isFocused, string label
 void DrawValueBox(Container bounds, string label, vector<int>& data, Color themeColor, bool isPlaceholder=false);
 vector<int> ParseStringToVector(string& input);
 void DrawLabelBox(Container bounds, string label, Color themeColor);
-void DrawList(Node* head, Vector2 startPos, Color themeColor);
+void DrawList(ListNode* head, Vector2 startPos, Color themeColor);
+void DrawStack(StackNode* head, Vector2 startPos, Color themeColor);
+
 
 void GUI() {
 
@@ -159,6 +168,10 @@ void ButtonLogic(int selected[], Vector2 mouse){
       selected[0] = 3;
       selected[1] = -1;
   }
+  if (CheckCollisionClick(mouse, button_Stack)) {
+      selected[0] = 4;
+      selected[1] = -1;
+  }
   // Sorting action buttons logic
   if (selected[0] == 0){
     if (CheckCollisionClick(mouse, button_SelectionSort)) selected[1] = 0;
@@ -182,9 +195,16 @@ void ButtonLogic(int selected[], Vector2 mouse){
     if (CheckCollisionClick(mouse, button_HashRemove)) selected[1] = 1;
     if (CheckCollisionClick(mouse, button_HashSearch)) selected[1] = 2;
   }
+  // lists action buttons
   if (selected[0] == 3){
     if (CheckCollisionClick(mouse, button_ListInsert)) selected[1] = 0;
     if (CheckCollisionClick(mouse, button_ListDeleteByValue)) selected[1] = 1;
+  }
+  // stack action buttons
+  if (selected[0] == 4){
+    if (CheckCollisionClick(mouse, button_StackPush)) selected[1] = 0;
+    if (CheckCollisionClick(mouse, button_StackPop)) selected[1] = 1;
+    //if (CheckCollisionClick(mouse, button_StackPeek)) selected[1] = 2;
   }
   // Actually coding actions
 
@@ -202,6 +222,7 @@ void DrawThings(int selected[], Vector2 mouse){
   DrawButton(button_Searching, mouse, selected[0] == 1 ? blue : gray, "Searching", false);
   DrawButton(button_Hash, mouse, selected[0] == 2 ? blue : gray, "Hash", false);
   DrawButton(button_Lists, mouse, selected[0] == 3 ? blue : gray, "List", false);
+  DrawButton(button_Stack, mouse, selected[0] == 4 ? blue : gray, "Stack", false);
   // Draw action buttons
   if (selected[0] == 0) {
     DrawButton(button_SelectionSort, mouse, selected[1] == 0 ? yellow : gray, "Selection", false);
@@ -226,6 +247,11 @@ void DrawThings(int selected[], Vector2 mouse){
   else if (selected[0] == 3) {
     DrawButton(button_ListInsert, mouse, selected[1] == 0 ? yellow : gray, "Insert", false);
     DrawButton(button_ListDeleteByValue, mouse, selected[1] == 1 ? yellow : gray, "Remove", false);
+  }
+  else if (selected[0] == 4) {
+    DrawButton(button_StackPush, mouse, selected[1] == 0 ? yellow : gray, "Push", false);
+    DrawButton(button_StackPop, mouse, selected[1] == 1 ? yellow : gray, "Pop", false);
+    //DrawButton(button_StackPeek, mouse, selected[1] == 2 ? yellow : gray, "Peek", false);
   }
   else selected[1] = -1;
 
@@ -302,11 +328,22 @@ void DrawThings(int selected[], Vector2 mouse){
       hashValueString.erase();
     }
   }
+  if (selected[0] == 4 and selected[1] >= 0) {
+    if(GuiInputBox(container_TextInputBox, hashValueString, isValueFieldFocused, "Something to push") 
+        and !hashValueString.empty())
+      hashValueInput = stoi(hashValueString);
+
+    if(StackNodeTop != nullptr) DrawStack(StackNodeTop, {170, 130}, gray);
+
+    if (DrawButton(button_Run2, mouse, yellow, "Run", true)) {
+      if (selected[1] == 0 and !hashValueString.empty()) StackNodeTop = push(StackNodeTop, hashValueInput);
+      if (selected[1] == 1) StackNodeTop = pop(StackNodeTop);
+      //if (selected[1] == 2) peek(StackNodeTop);
+      hashValueString.erase();
+    }
+  }
 }
 
-void DoThing(void (*funcPtr)()){
-  funcPtr();
-}
 
 bool DrawButton(Button btn, Vector2 mouse, Color hoverColor, string text, bool isFocused=false) {
   bool isHovered = CheckCollisionPointRec(mouse, btn.rect);
@@ -402,8 +439,8 @@ vector<int> ParseStringToVector(string& input) {
     return result;
 }
 
-void DrawList(Node* head, Vector2 startPos, Color themeColor) {
-  Node* current = head;
+void DrawList(ListNode *head, Vector2 startPos, Color themeColor) {
+  ListNode *current = head;
   Vector2 cursor = startPos;
   int nodeWidth = 50,
     nodeHeight = 50,
@@ -427,6 +464,34 @@ void DrawList(Node* head, Vector2 startPos, Color themeColor) {
       Vector2 endPrev = { cursor.x + nodeWidthT, cursor.y + 35 };
       DrawLineEx(startPrev, endPrev, 2, yellow);
       DrawTriangle({endPrev.x, endPrev.y}, {endPrev.x + 5, endPrev.y + 5}, {endPrev.x + 5, endPrev.y - 5}, yellow);
+    }
+
+    cursor.x += (nodeWidthT + horizontalSpacing);
+    current = current->next;
+  }
+}
+
+// make it look like real stack like cup with tabs/slices/rectangles or so
+void DrawStack(StackNode *head, Vector2 startPos, Color themeColor) {
+  StackNode *current = head;
+  Vector2 cursor = startPos;
+  int nodeWidth = 50,
+    nodeHeight = 50,
+    horizontalSpacing = 25;  
+  while (current != nullptr) {
+    string label = to_string(current->data);
+    int nodeWidthT = max(nodeWidth, MeasureText(label.c_str(), 20) + (gap * 2));
+
+    Rectangle rect = { cursor.x, cursor.y, (float)nodeWidthT, (float)nodeHeight };
+    Container bounds = { rect }; 
+    
+    DrawLabelBox(bounds, label, themeColor);
+
+    if (current->next != nullptr) {
+      Vector2 startLine = { cursor.x + nodeWidthT, cursor.y + 15 };
+      Vector2 endLine = { cursor.x + nodeWidthT + horizontalSpacing, cursor.y + 15 };
+      DrawLineEx(startLine, endLine, 2, green);
+      DrawTriangle({endLine.x, endLine.y}, {endLine.x - 5, endLine.y - 5}, {endLine.x - 5, endLine.y + 5}, green);
     }
 
     cursor.x += (nodeWidthT + horizontalSpacing);

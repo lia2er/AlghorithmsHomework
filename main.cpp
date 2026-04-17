@@ -1,8 +1,6 @@
 #include <iostream>
-#include "sorting.hpp"
 #include "utility.hpp"
 #include "gui.hpp"
-#include "lists.hpp"
 
 using namespace std;
 

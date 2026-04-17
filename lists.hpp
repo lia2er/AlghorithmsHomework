@@ -4,32 +4,32 @@
 
 using namespace std;
 
-struct Node{
+struct ListNode{
   int data;
-  Node* next;
-  Node* prev;
+  ListNode* next;
+  ListNode* prev;
 
-  Node(int value) : data(value), prev(nullptr), next(nullptr) {}
+  ListNode(int value) : data(value), prev(nullptr), next(nullptr) {}
 };
 
-Node* Insert(Node* head, int value){
-  Node* newNode = new Node(value);
+ListNode* Insert(ListNode* head, int value){
+  ListNode* newNode = new ListNode(value);
   newNode->next = head;
   if(head != nullptr) head->prev = newNode;
   return newNode;
 }
 
-void DeleteList(Node* head) {
+void DeleteList(ListNode* head) {
   while(head != nullptr) {
-    Node* next = head->next;
+    ListNode* next = head->next;
     delete head;
     head = next;
   }
 }
 
-Node* DeleteByValue(Node* head, int value) {
+ListNode* DeleteByValue(ListNode* head, int value) {
   if (head == nullptr) return nullptr;
-  Node* current = head;
+  ListNode* current = head;
 
   while (current != nullptr && current->data != value) {
     current = current->next;
@@ -52,16 +52,16 @@ Node* DeleteByValue(Node* head, int value) {
 }
 
 
-Node* DeleteFirst(Node* head){
+ListNode* DeleteFirst(ListNode* head){
   if(head == nullptr) return nullptr;
-  Node* newHead = head->next;
+  ListNode* newHead = head->next;
   delete head;
   if(newHead != nullptr) newHead->prev = nullptr;
   return newHead;
 }
 
-void Display(Node* head){
-  Node* current = head;
+void Display(ListNode* head){
+  ListNode* current = head;
   while(current != nullptr){
     cout << current->data << " ";
     current = current->next;

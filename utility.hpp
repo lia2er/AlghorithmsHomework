@@ -3,6 +3,7 @@
 #include "search.hpp"
 #include "hashTable.hpp"
 #include "lists.hpp"
+#include "stack.hpp"
 #include <ctime>
 #include <format>
 
@@ -115,7 +116,7 @@ void DoHash(){
 
 void DoLists() {
   int choice, value;
-  Node *mylist = nullptr;
+  ListNode *mylist = nullptr;
   while(true){
     cout << "Choose operation on list:\n1 - insert element\n2 - remove element\n3 - remove first element\n4 - print\n5 - quit\n $ ";
     cin >> choice;
@@ -143,6 +144,32 @@ void DoLists() {
     }
   }
   DeleteList(mylist);
+}
+
+void DoStack() {
+  int choice, value;
+  StackNode *top = nullptr;
+  while(true){
+    cout << "Choose operation on list:\n1 - push\n2 - pop\n3 - peek\n4 - quit\n $ ";
+    cin >> choice;
+    switch(choice){
+      case 1:
+        cout << "Enter a value: ";
+        cin >> value;
+        top = push(top, value);
+        break;
+      case 2:
+        top = pop(top);
+        break;
+      case 3:
+        peek(top);
+        break;
+      case 4:
+        break;
+      default:
+        cout << "Wrong option" << endl;
+    }
+  }
 }
 
 void ChooseArrayOperation(int ar[], int size){
@@ -187,7 +214,7 @@ void HandTypeArr(int size){
 
 
 void Exec(){
-  cout << "Choose what you`ll do:\n1 - array operations\n2 - hash operations\n3 - do list operations\n $ ";
+  cout << "Choose what you`ll do:\n1 - array operations\n2 - hash operations\n3 - do list operations\n4 - do stack\n $ ";
   char opt;
   int size;
   cin >> size;
@@ -207,6 +234,9 @@ void Exec(){
       break;
     case 3:
       DoLists();
+      break;
+    case 4:
+      DoStack();
       break;
     default: cout << "Wrong option" << endl;
   }
