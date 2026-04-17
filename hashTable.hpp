@@ -94,7 +94,7 @@ class HashMapTable{
         for (const auto& entry : table[i]) {
           string label = to_string(entry.key) + ":" + to_string(entry.value);
           int textWidth = MeasureText(label.c_str(), fontSize);
-          int dynamicBoxW = std::max(50, textWidth + (gap * 2)); 
+          int dynamicBoxW = max(50, textWidth + (gap * 2)); 
     
           DrawLine(currentX, bucketY + boxH/2, currentX + gap, bucketY + boxH/2, red);
           currentX += gap;

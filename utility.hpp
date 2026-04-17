@@ -2,7 +2,9 @@
 #include "sorting.hpp"
 #include "search.hpp"
 #include "hashTable.hpp"
+#include "lists.hpp"
 #include <ctime>
+#include <format>
 
 using namespace std;
 
@@ -111,8 +113,40 @@ void DoHash(){
   }
 }
 
-void ChooseOperation(int ar[], int size){
-  cout << "What you`ll do?\n1 - sort\n2 - search\n3 - operate a hash table\n";
+void DoLists() {
+  int choice, value;
+  Node *mylist = nullptr;
+  while(true){
+    cout << "Choose operation on list:\n1 - insert element\n2 - remove element\n3 - remove first element\n4 - print\n5 - quit\n $ ";
+    cin >> choice;
+    switch(choice){
+      case 1:
+        cout << "Enter a value: ";
+        cin >> value;
+        mylist = Insert(mylist, value);
+        break;
+      case 2:
+        cout << "enter value to delete it: ";
+        cin >> value;
+        mylist = DeleteByValue(mylist, value);
+        break;
+      case 3:
+        DeleteFirst(mylist);
+        break;
+      case 4:
+        Display(mylist);
+        break;
+      case 5:
+        break;
+      default:
+        cout << "Wrong option" << endl;
+    }
+  }
+  DeleteList(mylist);
+}
+
+void ChooseArrayOperation(int ar[], int size){
+  cout << "What you`ll do?\n1 - sort\n2 - search\n $ ";
   int option;
   cin >> option;
   switch (option) {
@@ -138,7 +172,7 @@ void ArrGen(int size){
   for(int i = 0; i<size; i++) ar[i] = rand()%20;
   
   PrintArray(ar, size, false);
-  ChooseOperation(ar, size);
+  ChooseArrayOperation(ar, size);
 }
 
 void HandTypeArr(int size){
@@ -148,28 +182,34 @@ void HandTypeArr(int size){
     cout << format("Element num {}: ", i+1);
     cin >> ar[i];
   }
-  ChooseOperation(ar, size);
+  ChooseArrayOperation(ar, size);
 }
 
 
 void Exec(){
-  cout << "Choose what you`ll do:\n1 - array operations\n2 - hash operations\n $ ";
+  cout << "Choose what you`ll do:\n1 - array operations\n2 - hash operations\n3 - do list operations\n $ ";
   char opt;
-  cin >> opt;
-  if(opt == '1'){
-    cin.clear();
-    int size;
-    cout << "Enter size of an array: ";
-    cin >> size;
-    cout << "Should we generate array(y), or enter it manually(n)? [y/n]: ";
-    cin >> opt;
-    
-    if(opt == 'y' || opt == 'Y') ArrGen(size);
-    else if(opt == 'n' || opt == 'N') HandTypeArr(size);
-    else cout << "Wrong option, bye!";
+  int size;
+  cin >> size;
+  switch(size){
+    case 1:
+      cout << "Enter size of an array: ";
+      cin >> size;
+      cout << "Should we generate array(y), or enter it manually(n)? [y/n]: ";
+      cin >> opt;
+      
+      if(tolower(opt) == 'y') ArrGen(size);
+      else if(tolower(opt) == 'n') HandTypeArr(size);
+      else cout << "Wrong option, bye!";
+    break;
+    case 2:
+      DoHash();
+      break;
+    case 3:
+      DoLists();
+      break;
+    default: cout << "Wrong option" << endl;
   }
-  if(opt == '2') DoHash();
-  else cout << "Wrong option" << endl;
 }
 
 // things for vectors, everything else is the same

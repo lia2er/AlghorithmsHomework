@@ -1,19 +1,25 @@
+#pragma once
 #include <iostream>
 #include <raylib.h>
 #include <string>
 #include <ranges>
 #include <vector>
 #include <format>
+#include <algorithm>
 #include "hashTable.hpp"
 #include "sorting.hpp"
 #include "search.hpp"
 #include "utility.hpp"
+#include "lists.hpp"
 
 using namespace std;
 
 const int screenWidth = 800;
 const int screenHeight = 800;
 const int gap = 15;
+const int nodeWidth = 40,
+          nodeHeight = 50,
+          horizontalSpacing = 10;
 vector<int> parsedArray;
 vector<int> sortedArray;
 int searchTarget;
@@ -29,6 +35,7 @@ string hashKeyString;
 string hashValueString;
 bool isKeyFieldFocused = false,
      isValueFieldFocused = false;
+Node *mylist = nullptr;
 
 const Color green = {0x98, 0x97, 0x1a, 255},
       yellow = {0xd7, 0x99, 0x21, 255},
@@ -47,6 +54,7 @@ typedef struct Button {
 Button button_Sorting       = { { 10, 10, 150, 50 }, gray };
 Button button_Searching     = { { 170, 10, 150, 50 }, gray };
 Button button_Hash          = { { 330, 10, 150, 50 }, gray };
+Button button_Lists = { {490, 10, 150, 50}, gray};
 // sorting buttons
 Button button_SelectionSort = { { 10, 70, 150, 50 }, gray };
 Button button_BubbleSort    = { { 10, 130, 150, 50 }, gray };
@@ -65,9 +73,12 @@ Button button_HashInsert = button_SelectionSort;
 Button button_HashRemove = button_BubbleSort;
 Button button_HashSearch = button_MergeSort;
 // action buttons
-Button button_GenerateArray = { { screenWidth - 160, 70, 150, 50 }, gray };
-Button button_Run          = { { button_GenerateArray.rect.x, button_GenerateArray.rect.y + 60, button_GenerateArray.rect.width, button_GenerateArray.rect.height }, gray };
-
+Button button_GenerateArray = { { screenWidth - 150, 70, 150, 50 }, gray };
+Button button_Run = { { button_GenerateArray.rect.x, button_GenerateArray.rect.y + 60, button_GenerateArray.rect.width, button_GenerateArray.rect.height }, gray };
+Button button_Run2 = button_GenerateArray;
+// list buttons
+Button button_ListInsert = button_SelectionSort;
+Button button_ListDeleteByValue = button_BubbleSort;
 
 typedef struct Container{
   Rectangle rect;
@@ -76,12 +87,13 @@ typedef struct Container{
 Container container_Operation = {0, 0, screenWidth, 70};
 Container container_Action = {0, 70, 170, screenHeight};
 Container container_Back = {0, 0, screenWidth, screenHeight};
-Container container_TextInputBox = {170, 70, screenWidth - 340, 50};
+Container container_TextInputBox = {170, 70, screenWidth - 330, 50};
 Container container_TargetInputBox = {170, 130, 310, 50};
 Container container_SortedArrayOutputLabelBox = {170, 130, screenWidth - 340, 50};
 Container container_FoundTargetOutputLabelBox = {170, 190, screenWidth - 340, 50};
 Container container_HashKeyInputField = {170, 70, 150, 50};
 Container container_HashValueInputField = {container_HashKeyInputField.rect.x + 160, 70,  310, 50};
+Container container_ListValueBox = container_SortedArrayOutputLabelBox;
 
 void DrawThings(int selected[], Vector2 mouse);
 void ButtonLogic(int selected[], Vector2 mouse);
@@ -94,6 +106,7 @@ bool GuiInputBox(Container bounds, string& buffer, bool& isFocused, string label
 void DrawValueBox(Container bounds, string label, vector<int>& data, Color themeColor, bool isPlaceholder=false);
 vector<int> ParseStringToVector(string& input);
 void DrawLabelBox(Container bounds, string label, Color themeColor);
+void DrawList(Node* head, Vector2 startPos, Color themeColor);
 
 void GUI() {
 
@@ -142,6 +155,10 @@ void ButtonLogic(int selected[], Vector2 mouse){
       selected[0] = 2;
       selected[1] = -1;
   }
+  if (CheckCollisionClick(mouse, button_Lists)) {
+      selected[0] = 3;
+      selected[1] = -1;
+  }
   // Sorting action buttons logic
   if (selected[0] == 0){
     if (CheckCollisionClick(mouse, button_SelectionSort)) selected[1] = 0;
@@ -165,6 +182,10 @@ void ButtonLogic(int selected[], Vector2 mouse){
     if (CheckCollisionClick(mouse, button_HashRemove)) selected[1] = 1;
     if (CheckCollisionClick(mouse, button_HashSearch)) selected[1] = 2;
   }
+  if (selected[0] == 3){
+    if (CheckCollisionClick(mouse, button_ListInsert)) selected[1] = 0;
+    if (CheckCollisionClick(mouse, button_ListDeleteByValue)) selected[1] = 1;
+  }
   // Actually coding actions
 
   // if (subSelected == 0 and pressedGenerateOrDoWorkButton) do SelectionSort
@@ -180,6 +201,7 @@ void DrawThings(int selected[], Vector2 mouse){
   DrawButton(button_Sorting, mouse, selected[0] == 0 ? blue : gray, "Sorting", false);
   DrawButton(button_Searching, mouse, selected[0] == 1 ? blue : gray, "Searching", false);
   DrawButton(button_Hash, mouse, selected[0] == 2 ? blue : gray, "Hash", false);
+  DrawButton(button_Lists, mouse, selected[0] == 3 ? blue : gray, "List", false);
   // Draw action buttons
   if (selected[0] == 0) {
     DrawButton(button_SelectionSort, mouse, selected[1] == 0 ? yellow : gray, "Selection", false);
@@ -200,6 +222,10 @@ void DrawThings(int selected[], Vector2 mouse){
     DrawButton(button_HashInsert, mouse, selected[1] == 0 ? yellow : gray, "Insert", false);
     DrawButton(button_HashRemove, mouse, selected[1] == 1 ? yellow : gray, "Remove", false);
     DrawButton(button_HashSearch, mouse, selected[1] == 2 ? yellow : gray, "Search", false);
+  }
+  else if (selected[0] == 3) {
+    DrawButton(button_ListInsert, mouse, selected[1] == 0 ? yellow : gray, "Insert", false);
+    DrawButton(button_ListDeleteByValue, mouse, selected[1] == 1 ? yellow : gray, "Remove", false);
   }
   else selected[1] = -1;
 
@@ -248,10 +274,6 @@ void DrawThings(int selected[], Vector2 mouse){
     }
   }
   if (selected[0] == 2 and selected[1] >= 0) {
-    button_Run = button_GenerateArray;
-    button_Run.rect.x = screenWidth - 150;
-    button_Run.rect.width = 140;
-
     if(GuiInputBox(container_HashKeyInputField, hashKeyString, isKeyFieldFocused, "Key") and !hashKeyString.empty())
       hashKeyInput = stoi(hashKeyString);
 
@@ -260,10 +282,24 @@ void DrawThings(int selected[], Vector2 mouse){
 
     hashTable.Draw(170, 130, gray, yellow, green);
       
-    if (DrawButton(button_Run, mouse, yellow, "Run", true) and !hashKeyString.empty()) {
+    if (DrawButton(button_Run2, mouse, yellow, "Run", true) and !hashKeyString.empty()) {
       if (selected[1] == 0) hashTable.Insert(hashKeyInput, hashValueInput);
       if (selected[1] == 1) hashTable.Remove(hashKeyInput);
       if (selected[1] == 2) CheckReturnToString(hashTable.SearchKey(hashKeyInput), hashKeyInput);
+      hashValueString.erase();
+      hashKeyString.erase();
+    }
+  }
+  if (selected[0] == 3 and selected[1] >= 0) {
+    if(GuiInputBox(container_TextInputBox, hashValueString, isValueFieldFocused, "Value") and !hashValueString.empty())
+      hashValueInput = stoi(hashValueString);
+
+    if(mylist != nullptr) DrawList(mylist, {170, 130}, gray);
+
+    if (DrawButton(button_Run2, mouse, yellow, "Run", true) and !hashValueString.empty()) {
+      if (selected[1] == 0) mylist = Insert(mylist, hashValueInput);
+      if (selected[1] == 1) mylist = DeleteByValue(mylist, hashValueInput);
+      hashValueString.erase();
     }
   }
 }
@@ -274,12 +310,11 @@ void DoThing(void (*funcPtr)()){
 
 bool DrawButton(Button btn, Vector2 mouse, Color hoverColor, string text, bool isFocused=false) {
   bool isHovered = CheckCollisionPointRec(mouse, btn.rect);
-  bool isClicked = isHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
   if(isFocused) DrawRectangleRec(btn.rect, isHovered ? hoverColor : btn.color);
   else DrawRectangleRec(btn.rect, hoverColor); 
   
   DrawText(text.c_str(), btn.rect.x + gap, btn.rect.y + gap, 20, WHITE);
-  return isClicked;
+  return CheckCollisionClick(mouse, btn);
 }
 
 bool CheckCollisionClick(Vector2 mouse, Button button){
@@ -367,3 +402,34 @@ vector<int> ParseStringToVector(string& input) {
     return result;
 }
 
+void DrawList(Node* head, Vector2 startPos, Color themeColor) {
+  Node* current = head;
+  Vector2 cursor = startPos;
+  int nodeWidth = 50,
+    nodeHeight = 50,
+    horizontalSpacing = 10;  
+  while (current != nullptr) {
+    string label = to_string(current->data);
+    int nodeWidthT = max(nodeWidth, MeasureText(label.c_str(), 20) + (gap * 2));
+
+    Rectangle rect = { cursor.x, cursor.y, (float)nodeWidthT, (float)nodeHeight };
+    Container bounds = { rect }; 
+    
+    DrawLabelBox(bounds, label, themeColor);
+
+    if (current->next != nullptr) {
+      Vector2 startLine = { cursor.x + nodeWidthT, cursor.y + 15 };
+      Vector2 endLine = { cursor.x + nodeWidthT + horizontalSpacing, cursor.y + 15 };
+      DrawLineEx(startLine, endLine, 2, green);
+      DrawTriangle({endLine.x, endLine.y}, {endLine.x - 5, endLine.y - 5}, {endLine.x - 5, endLine.y + 5}, green);
+
+      Vector2 startPrev = { cursor.x + nodeWidthT + horizontalSpacing, cursor.y + 35 };
+      Vector2 endPrev = { cursor.x + nodeWidthT, cursor.y + 35 };
+      DrawLineEx(startPrev, endPrev, 2, yellow);
+      DrawTriangle({endPrev.x, endPrev.y}, {endPrev.x + 5, endPrev.y + 5}, {endPrev.x + 5, endPrev.y - 5}, yellow);
+    }
+
+    cursor.x += (nodeWidthT + horizontalSpacing);
+    current = current->next;
+  }
+}
