@@ -150,7 +150,7 @@ void DoStack() {
   int choice, value;
   StackNode *top = nullptr;
   while(true){
-    cout << "Choose operation on list:\n1 - push\n2 - pop\n3 - peek\n4 - quit\n $ ";
+    cout << "Choose operation on stack:\n1 - push\n2 - pop\n3 - peek\n4 - quit\n $ ";
     cin >> choice;
     switch(choice){
       case 1:
@@ -162,7 +162,7 @@ void DoStack() {
         top = pop(top);
         break;
       case 3:
-        peek(top);
+        CheckReturn(peek(top));
         break;
       case 4:
         break;

@@ -18,9 +18,6 @@ using namespace std;
 const int screenWidth = 800;
 const int screenHeight = 800;
 const int gap = 15;
-const int nodeWidth = 40,
-          nodeHeight = 50,
-          horizontalSpacing = 10;
 vector<int> parsedArray;
 vector<int> sortedArray;
 int searchTarget;
@@ -38,6 +35,7 @@ bool isKeyFieldFocused = false,
      isValueFieldFocused = false;
 ListNode *mylist = nullptr;
 StackNode *StackNodeTop = nullptr;
+int maxStackWidth = 0;
 
 const Color green = {0x98, 0x97, 0x1a, 255},
       yellow = {0xd7, 0x99, 0x21, 255},
@@ -52,12 +50,12 @@ typedef struct Button {
     Color color;
 } Button;
 
-// One-line initializations: { {x, y, width, height}, color }
+// action buttons
 Button button_Sorting = { { 10, 10, 150, 50 }, gray };
 Button button_Searching = { { 170, 10, 150, 50 }, gray };
-Button button_Hash = { { 330, 10, 150, 50 }, gray };
-Button button_Lists = { {490, 10, 150, 50}, gray};
-Button button_Stack = { {550, 10, 150, 50}, gray};
+Button button_Hash = { { 330, 10, 80, 50 }, gray };
+Button button_Lists = { {420, 10, 60, 50}, gray};
+Button button_Stack = { {490, 10, 150, 50}, gray};
 // sorting buttons
 Button button_SelectionSort = { { 10, 70, 150, 50 }, gray };
 Button button_BubbleSort = { { 10, 130, 150, 50 }, gray };
@@ -333,7 +331,7 @@ void DrawThings(int selected[], Vector2 mouse){
         and !hashValueString.empty())
       hashValueInput = stoi(hashValueString);
 
-    if(StackNodeTop != nullptr) DrawStack(StackNodeTop, {170, 130}, gray);
+    if(StackNodeTop != nullptr) DrawStack(StackNodeTop, {220, 130}, gray);
 
     if (DrawButton(button_Run2, mouse, yellow, "Run", true)) {
       if (selected[1] == 0 and !hashValueString.empty()) StackNodeTop = push(StackNodeTop, hashValueInput);
@@ -471,30 +469,40 @@ void DrawList(ListNode *head, Vector2 startPos, Color themeColor) {
   }
 }
 
-// make it look like real stack like cup with tabs/slices/rectangles or so
+// to do: fix arrows
 void DrawStack(StackNode *head, Vector2 startPos, Color themeColor) {
   StackNode *current = head;
   Vector2 cursor = startPos;
   int nodeWidth = 50,
     nodeHeight = 50,
-    horizontalSpacing = 25;  
+    verticalSpacing = 10;  
+  Rectangle rect;
   while (current != nullptr) {
     string label = to_string(current->data);
     int nodeWidthT = max(nodeWidth, MeasureText(label.c_str(), 20) + (gap * 2));
 
-    Rectangle rect = { cursor.x, cursor.y, (float)nodeWidthT, (float)nodeHeight };
+    if (maxStackWidth <  nodeWidthT) maxStackWidth = nodeWidthT;
+
+    rect = { cursor.x, cursor.y, (float)nodeWidthT, (float)nodeHeight };
     Container bounds = { rect }; 
     
     DrawLabelBox(bounds, label, themeColor);
+    DrawLineEx({startPos.x - gap, startPos.y + nodeHeight/2}, 
+        {rect.x - gap,rect.y + nodeHeight + gap}, 2, yellow);
+    DrawLineEx({startPos.x + maxStackWidth + gap, startPos.y + nodeHeight/2}, 
+        {rect.x + maxStackWidth + gap, rect.y + nodeHeight + gap}, 2, yellow);
 
     if (current->next != nullptr) {
-      Vector2 startLine = { cursor.x + nodeWidthT, cursor.y + 15 };
-      Vector2 endLine = { cursor.x + nodeWidthT + horizontalSpacing, cursor.y + 15 };
+      Vector2 startLine = { cursor.x + nodeWidthT/2, cursor.y + nodeHeight + verticalSpacing/2 };
+      Vector2 endLine = { cursor.x + nodeWidthT/2, cursor.y + nodeHeight + verticalSpacing};
       DrawLineEx(startLine, endLine, 2, green);
-      DrawTriangle({endLine.x, endLine.y}, {endLine.x - 5, endLine.y - 5}, {endLine.x - 5, endLine.y + 5}, green);
+      DrawTriangle({startLine.x - 5, startLine.y}, {startLine.x, startLine.y - 5}, {startLine.x + 5, startLine.y}, green);
     }
 
-    cursor.x += (nodeWidthT + horizontalSpacing);
+    cursor.y += (nodeHeight + verticalSpacing);
     current = current->next;
   }
+  DrawLineEx({startPos.x - gap, rect.y + nodeHeight + gap}, {startPos.x + maxStackWidth + gap, rect.y + nodeHeight + gap}, 2, yellow);
+  DrawText("Stack", startPos.x + maxStackWidth/3, rect.y + nodeHeight + gap*2, 20, yellow);
+  rect = {0,0,0,0};
 }

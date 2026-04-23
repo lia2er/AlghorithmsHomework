@@ -39,6 +39,11 @@ void CheckReturn(int result, int target){
   else cout << "Значення " << target << " не знайдено у масиві" << endl;
 }
 
+void CheckReturn(int result){
+  if(result != -1) cout << "Значення " << result << " підглянуто" << endl;
+  else cout << "Значення " << result << " не підглянуто" << endl;
+}
+
 // the same but for vectors
 
 
