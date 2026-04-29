@@ -4,6 +4,7 @@
 #include "hashTable.hpp"
 #include "lists.hpp"
 #include "stack.hpp"
+#include "queue.hpp"
 #include <ctime>
 #include <format>
 
@@ -80,7 +81,7 @@ void DoHash(){
   cout << "Enter table size: ";
   cin >> size;
   HashMapTable hashTable(size);
-  while(true){
+  while(true and choice != 5){
     cout << "Choose operation on hash table:\n1 - insert element\n2 - find an element\n3 - remove element\n4 - print\n5 - quit\n $ ";
     cin >> choice;
     switch(choice){
@@ -103,8 +104,6 @@ void DoHash(){
         cin >> key;
         hashTable.Remove(key);
         break;
-      case 5:
-        return;
       case 4:
         hashTable.Display();
         break;
@@ -116,9 +115,9 @@ void DoHash(){
 
 void DoLists() {
   int choice, value;
-  ListNode *mylist = nullptr;
+  DoubleListNode *mylist = nullptr;
   while(true){
-    cout << "Choose operation on list:\n1 - insert element\n2 - remove element\n3 - remove first element\n4 - print\n5 - quit\n $ ";
+    cout << "Choose operation on list:\n1 - insert element\n2 - remove element\n3 - remove first element\n4 - print\n $ ";
     cin >> choice;
     switch(choice){
       case 1:
@@ -137,8 +136,6 @@ void DoLists() {
       case 4:
         Display(mylist);
         break;
-      case 5:
-        break;
       default:
         cout << "Wrong option" << endl;
     }
@@ -148,9 +145,9 @@ void DoLists() {
 
 void DoStack() {
   int choice, value;
-  StackNode *top = nullptr;
+  SoleListNode *top = nullptr;
   while(true){
-    cout << "Choose operation on stack:\n1 - push\n2 - pop\n3 - peek\n4 - quit\n $ ";
+    cout << "Choose operation on stack:\n1 - push\n2 - pop\n3 - peek\n $ ";
     cin >> choice;
     switch(choice){
       case 1:
@@ -164,11 +161,44 @@ void DoStack() {
       case 3:
         CheckReturn(peek(top));
         break;
+      default:
+        cout << "Wrong option" << endl;
+    }
+  }
+}
+
+void DoQueue() {
+  int choice, value;
+  SoleListNode *front = nullptr;
+  SoleListNode *rear = nullptr;
+  while(true){
+    cout << "Choose operation on queue:\n1 - enqueue\n2 - dequeue\n3 - display\n4 - clear queue\n $ ";
+    cin >> choice;
+    switch(choice){
+      case 1:
+        cout << "Enter a value: ";
+        cin >> value;
+        rear = enqueue(rear, value);
+        if (front == nullptr) front = rear;
+        break;
+      case 2:
+        if (front != nullptr) {
+          front = dequeue(front);
+          if (front == nullptr) rear == nullptr;
+        }
+
+        break;
+      case 3:
+        Display(front);
+        break;
       case 4:
+        ClearQueue(front);
+        front = rear = nullptr;
         break;
       default:
         cout << "Wrong option" << endl;
     }
+    cin.clear();
   }
 }
 
@@ -214,7 +244,7 @@ void HandTypeArr(int size){
 
 
 void Exec(){
-  cout << "Choose what you`ll do:\n1 - array operations\n2 - hash operations\n3 - do list operations\n4 - do stack\n $ ";
+  cout << "Choose what you`ll do:\n1 - array operations\n2 - hash operations\n3 - do list operations\n4 - do stack\n5 - do queue\n $ ";
   char opt;
   int size;
   cin >> size;
@@ -237,6 +267,9 @@ void Exec(){
       break;
     case 4:
       DoStack();
+      break;
+    case 5:
+      DoQueue();
       break;
     default: cout << "Wrong option" << endl;
   }

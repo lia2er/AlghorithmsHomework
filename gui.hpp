@@ -12,6 +12,7 @@
 #include "utility.hpp"
 #include "lists.hpp"
 #include "stack.hpp"
+#include "queue.hpp"
 
 using namespace std;
 
@@ -33,8 +34,10 @@ string hashKeyString;
 string hashValueString;
 bool isKeyFieldFocused = false,
      isValueFieldFocused = false;
-ListNode *mylist = nullptr;
-StackNode *StackNodeTop = nullptr;
+DoubleListNode *mylist = nullptr;
+SoleListNode *StackNodeTop = nullptr;
+SoleListNode *QueueFront = nullptr,
+             *QueueRear = nullptr;
 int maxStackWidth = 0;
 
 const Color green = {0x98, 0x97, 0x1a, 255},
@@ -56,6 +59,7 @@ Button button_Searching = { { 170, 10, 150, 50 }, gray };
 Button button_Hash = { { 330, 10, 80, 50 }, gray };
 Button button_Lists = { {420, 10, 60, 50}, gray};
 Button button_Stack = { {490, 10, 150, 50}, gray};
+Button button_Queue = { {650, 10, 150, 50}, gray};
 // sorting buttons
 Button button_SelectionSort = { { 10, 70, 150, 50 }, gray };
 Button button_BubbleSort = { { 10, 130, 150, 50 }, gray };
@@ -84,6 +88,9 @@ Button button_ListDeleteByValue = button_BubbleSort;
 Button button_StackPush = button_SelectionSort,
        button_StackPop = button_BubbleSort,
        button_StackPeek = button_MergeSort;
+// queue buttons
+Button button_QueueEnqueue = button_SelectionSort,
+       button_QueueDequeue = button_BubbleSort;
 
 typedef struct Container{
   Rectangle rect;
@@ -111,8 +118,8 @@ bool GuiInputBox(Container bounds, string& buffer, bool& isFocused, string label
 void DrawValueBox(Container bounds, string label, vector<int>& data, Color themeColor, bool isPlaceholder=false);
 vector<int> ParseStringToVector(string& input);
 void DrawLabelBox(Container bounds, string label, Color themeColor);
-void DrawList(ListNode* head, Vector2 startPos, Color themeColor);
-void DrawStack(StackNode* head, Vector2 startPos, Color themeColor);
+void DrawList(DoubleListNode* head, Vector2 startPos, Color themeColor);
+void DrawSoleList(SoleListNode *head, Vector2 startPos, Color themeColor, bool isClose=false);
 
 
 void GUI() {
@@ -170,6 +177,11 @@ void ButtonLogic(int selected[], Vector2 mouse){
       selected[0] = 4;
       selected[1] = -1;
   }
+  
+  if (CheckCollisionClick(mouse, button_Queue)) {
+      selected[0] = 5;
+      selected[1] = -1;
+  }
   // Sorting action buttons logic
   if (selected[0] == 0){
     if (CheckCollisionClick(mouse, button_SelectionSort)) selected[1] = 0;
@@ -204,6 +216,12 @@ void ButtonLogic(int selected[], Vector2 mouse){
     if (CheckCollisionClick(mouse, button_StackPop)) selected[1] = 1;
     //if (CheckCollisionClick(mouse, button_StackPeek)) selected[1] = 2;
   }
+  // queue actions
+  if (selected[0] == 5){
+    if (CheckCollisionClick(mouse, button_QueueEnqueue)) selected[1] = 0;
+    if (CheckCollisionClick(mouse, button_QueueDequeue)) selected[1] = 1;
+    //if (CheckCollisionClick(mouse, button_StackPeek)) selected[1] = 2;
+  }
   // Actually coding actions
 
   // if (subSelected == 0 and pressedGenerateOrDoWorkButton) do SelectionSort
@@ -221,6 +239,7 @@ void DrawThings(int selected[], Vector2 mouse){
   DrawButton(button_Hash, mouse, selected[0] == 2 ? blue : gray, "Hash", false);
   DrawButton(button_Lists, mouse, selected[0] == 3 ? blue : gray, "List", false);
   DrawButton(button_Stack, mouse, selected[0] == 4 ? blue : gray, "Stack", false);
+  DrawButton(button_Queue, mouse, selected[0] == 5 ? blue : gray, "Queue", false);
   // Draw action buttons
   if (selected[0] == 0) {
     DrawButton(button_SelectionSort, mouse, selected[1] == 0 ? yellow : gray, "Selection", false);
@@ -251,10 +270,14 @@ void DrawThings(int selected[], Vector2 mouse){
     DrawButton(button_StackPop, mouse, selected[1] == 1 ? yellow : gray, "Pop", false);
     //DrawButton(button_StackPeek, mouse, selected[1] == 2 ? yellow : gray, "Peek", false);
   }
+  else if (selected[0] == 5) {
+    DrawButton(button_QueueEnqueue, mouse, selected[1] == 0 ? yellow : gray, "Enqueue", false);
+    DrawButton(button_QueueDequeue, mouse, selected[1] == 1 ? yellow : gray, "Dequeue", false);
+  }
   else selected[1] = -1;
 
 
-  // draw text field if appropriate operations choosed
+  // draw field if appropriate operations choosed
   if (selected[0] == 0 and selected[1] >= 0) {
     if (DrawButton(button_GenerateArray, mouse, yellow, "Generate", true)){
       parsedArray = ArrGenV();
@@ -331,12 +354,35 @@ void DrawThings(int selected[], Vector2 mouse){
         and !hashValueString.empty())
       hashValueInput = stoi(hashValueString);
 
-    if(StackNodeTop != nullptr) DrawStack(StackNodeTop, {220, 130}, gray);
+    if(StackNodeTop != nullptr) DrawSoleList(StackNodeTop, {220, 130}, gray, true);
 
     if (DrawButton(button_Run2, mouse, yellow, "Run", true)) {
       if (selected[1] == 0 and !hashValueString.empty()) StackNodeTop = push(StackNodeTop, hashValueInput);
       if (selected[1] == 1) StackNodeTop = pop(StackNodeTop);
       //if (selected[1] == 2) peek(StackNodeTop);
+      hashValueString.erase();
+    }
+  }
+  if (selected[0] == 5 and selected[1] >= 0) {
+    if(GuiInputBox(container_TextInputBox, hashValueString, isValueFieldFocused, "Enter value...") 
+        and !hashValueString.empty())
+      hashValueInput = stoi(hashValueString);
+
+    if(QueueRear != nullptr) DrawSoleList(QueueFront, {220, 130}, gray);
+
+    if (DrawButton(button_Run2, mouse, yellow, "Run", true)) {
+      if (selected[1] == 0 and !hashValueString.empty()) {
+        QueueRear = enqueue(QueueRear, hashValueInput);
+        if (QueueFront == nullptr) QueueFront = QueueRear;
+        Display(QueueFront);
+      }
+      if (selected[1] == 1) {
+        if (QueueFront != nullptr) {
+          QueueFront = dequeue(QueueFront);
+          if (QueueFront == nullptr) QueueRear == nullptr;
+          Display(QueueFront);
+        }
+      }
       hashValueString.erase();
     }
   }
@@ -437,8 +483,8 @@ vector<int> ParseStringToVector(string& input) {
     return result;
 }
 
-void DrawList(ListNode *head, Vector2 startPos, Color themeColor) {
-  ListNode *current = head;
+void DrawList(DoubleListNode *head, Vector2 startPos, Color themeColor) {
+  DoubleListNode *current = head;
   Vector2 cursor = startPos;
   int nodeWidth = 50,
     nodeHeight = 50,
@@ -469,9 +515,8 @@ void DrawList(ListNode *head, Vector2 startPos, Color themeColor) {
   }
 }
 
-// to do: fix arrows
-void DrawStack(StackNode *head, Vector2 startPos, Color themeColor) {
-  StackNode *current = head;
+void DrawSoleList(SoleListNode *head, Vector2 startPos, Color themeColor, bool isClose) {
+  SoleListNode *current = head;
   Vector2 cursor = startPos;
   int nodeWidth = 50,
     nodeHeight = 50,
@@ -487,22 +532,21 @@ void DrawStack(StackNode *head, Vector2 startPos, Color themeColor) {
     Container bounds = { rect }; 
     
     DrawLabelBox(bounds, label, themeColor);
-    DrawLineEx({startPos.x - gap, startPos.y + nodeHeight/2}, 
+    DrawLineEx({startPos.x - gap, startPos.y + nodeHeight}, 
         {rect.x - gap,rect.y + nodeHeight + gap}, 2, yellow);
-    DrawLineEx({startPos.x + maxStackWidth + gap, startPos.y + nodeHeight/2}, 
+    DrawLineEx({startPos.x + maxStackWidth + gap, startPos.y + nodeHeight}, 
         {rect.x + maxStackWidth + gap, rect.y + nodeHeight + gap}, 2, yellow);
 
     if (current->next != nullptr) {
-      Vector2 startLine = { cursor.x + nodeWidthT/2, cursor.y + nodeHeight + verticalSpacing/2 };
+      Vector2 startLine = { cursor.x + nodeWidthT/2, cursor.y + nodeHeight};
       Vector2 endLine = { cursor.x + nodeWidthT/2, cursor.y + nodeHeight + verticalSpacing};
       DrawLineEx(startLine, endLine, 2, green);
-      DrawTriangle({startLine.x - 5, startLine.y}, {startLine.x, startLine.y - 5}, {startLine.x + 5, startLine.y}, green);
     }
 
     cursor.y += (nodeHeight + verticalSpacing);
     current = current->next;
   }
-  DrawLineEx({startPos.x - gap, rect.y + nodeHeight + gap}, {startPos.x + maxStackWidth + gap, rect.y + nodeHeight + gap}, 2, yellow);
-  DrawText("Stack", startPos.x + maxStackWidth/3, rect.y + nodeHeight + gap*2, 20, yellow);
+  if (isClose)
+    DrawLineEx({startPos.x - gap, rect.y + nodeHeight + gap}, {startPos.x + maxStackWidth + gap, rect.y + nodeHeight + gap}, 2, yellow);
   rect = {0,0,0,0};
 }

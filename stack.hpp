@@ -31,31 +31,31 @@ void display() {
   }
 }
 
-struct StackNode {
+struct SoleListNode {
   int data;
-  StackNode *next;
+  SoleListNode *next;
 
-  StackNode(int value) : data(value), next(nullptr) {}
+  SoleListNode(int value) : data(value), next(nullptr) {}
 };
 
-StackNode *push(StackNode *top, int value) {
-  StackNode *newNode = new StackNode(value);
+SoleListNode *push(SoleListNode *top, int value) {
+  SoleListNode *newNode = new SoleListNode(value);
   newNode->next = top;
   return newNode;
 }
 
-StackNode *pop(StackNode *top) {
+SoleListNode *pop(SoleListNode *top) {
   if (top != nullptr) {
-    StackNode *temp = top;
+    SoleListNode *temp = top;
     top = top->next;
     delete temp;
   }
   return top;
 }
 
-int peek(StackNode *top) {
+int peek(SoleListNode *top) {
   if (top != nullptr) return top->data;
   return -1;
 }
 
-bool isEmpty(StackNode *top) { return top == nullptr; }
+bool isEmpty(SoleListNode *top) { return top == nullptr; }
