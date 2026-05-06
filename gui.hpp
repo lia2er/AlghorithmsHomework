@@ -13,6 +13,7 @@
 #include "lists.hpp"
 #include "stack.hpp"
 #include "queue.hpp"
+#include "binaryTrees.hpp"
 
 using namespace std;
 
@@ -39,6 +40,7 @@ SoleListNode *StackNodeTop = nullptr;
 SoleListNode *QueueFront = nullptr,
              *QueueRear = nullptr;
 int maxStackWidth = 0;
+TreeNode *root = nullptr;
 
 const Color green = {0x98, 0x97, 0x1a, 255},
       yellow = {0xd7, 0x99, 0x21, 255},
@@ -120,7 +122,6 @@ vector<int> ParseStringToVector(string& input);
 void DrawLabelBox(Container bounds, string label, Color themeColor);
 void DrawList(DoubleListNode* head, Vector2 startPos, Color themeColor);
 void DrawSoleList(SoleListNode *head, Vector2 startPos, Color themeColor, bool isClose=false);
-
 
 void GUI() {
 
@@ -532,10 +533,10 @@ void DrawSoleList(SoleListNode *head, Vector2 startPos, Color themeColor, bool i
     Container bounds = { rect }; 
     
     DrawLabelBox(bounds, label, themeColor);
-    DrawLineEx({startPos.x - gap, startPos.y + nodeHeight}, 
-        {rect.x - gap,rect.y + nodeHeight + gap}, 2, yellow);
-    DrawLineEx({startPos.x + maxStackWidth + gap, startPos.y + nodeHeight}, 
-        {rect.x + maxStackWidth + gap, rect.y + nodeHeight + gap}, 2, yellow);
+    DrawLineEx({startPos.x - gap, startPos.y}, 
+        {rect.x - gap,rect.y + nodeHeight}, 2, yellow);
+    DrawLineEx({startPos.x + maxStackWidth + gap, startPos.y}, 
+        {rect.x + maxStackWidth + gap, rect.y + nodeHeight}, 2, yellow);
 
     if (current->next != nullptr) {
       Vector2 startLine = { cursor.x + nodeWidthT/2, cursor.y + nodeHeight};

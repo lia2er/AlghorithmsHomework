@@ -5,6 +5,8 @@
 #include "lists.hpp"
 #include "stack.hpp"
 #include "queue.hpp"
+#include "binaryTrees.hpp"
+#include <cstdlib>
 #include <ctime>
 #include <format>
 
@@ -107,6 +109,9 @@ void DoHash(){
       case 4:
         hashTable.Display();
         break;
+      case 5:
+        exit(0);
+        break;
       default:
         cout << "Wrong option" << endl;
     }
@@ -117,7 +122,7 @@ void DoLists() {
   int choice, value;
   DoubleListNode *mylist = nullptr;
   while(true){
-    cout << "Choose operation on list:\n1 - insert element\n2 - remove element\n3 - remove first element\n4 - print\n $ ";
+    cout << "Choose operation on list:\n1 - insert element\n2 - remove element\n3 - remove first element\n4 - print\n5 - exit\n $ ";
     cin >> choice;
     switch(choice){
       case 1:
@@ -136,6 +141,9 @@ void DoLists() {
       case 4:
         Display(mylist);
         break;
+      case 5:
+        exit(0);
+        break;
       default:
         cout << "Wrong option" << endl;
     }
@@ -147,7 +155,7 @@ void DoStack() {
   int choice, value;
   SoleListNode *top = nullptr;
   while(true){
-    cout << "Choose operation on stack:\n1 - push\n2 - pop\n3 - peek\n $ ";
+    cout << "Choose operation on stack:\n1 - push\n2 - pop\n3 - peek\n4 - exit\n $ ";
     cin >> choice;
     switch(choice){
       case 1:
@@ -161,6 +169,9 @@ void DoStack() {
       case 3:
         CheckReturn(peek(top));
         break;
+      case 4:
+        exit(0);
+        break;
       default:
         cout << "Wrong option" << endl;
     }
@@ -172,7 +183,7 @@ void DoQueue() {
   SoleListNode *front = nullptr;
   SoleListNode *rear = nullptr;
   while(true){
-    cout << "Choose operation on queue:\n1 - enqueue\n2 - dequeue\n3 - display\n4 - clear queue\n $ ";
+    cout << "Choose operation on queue:\n1 - enqueue\n2 - dequeue\n3 - display\n4 - clear queue\n5 - exit\n $ ";
     cin >> choice;
     switch(choice){
       case 1:
@@ -186,7 +197,6 @@ void DoQueue() {
           front = dequeue(front);
           if (front == nullptr) rear == nullptr;
         }
-
         break;
       case 3:
         Display(front);
@@ -195,11 +205,52 @@ void DoQueue() {
         ClearQueue(front);
         front = rear = nullptr;
         break;
+      case 5:
+        exit(0);
+        break;
       default:
         cout << "Wrong option" << endl;
     }
     cin.clear();
   }
+}
+
+void DoBST() {
+  int choice, value;
+  TreeNode *root = nullptr;
+  while(true){
+    cout << "Choose operation on BST:\n1 - insert node\n2 - delete node\n3 - search\n4 - in order traversal\n5 - exit\n $ ";
+    cin >> choice;
+    switch(choice){
+      case 1:
+        cout << "Enter value to insert: ";
+        cin >> value;
+        root = Insert(root, value);
+        break;
+      case 2:
+        cout << "Enter value to delete: ";
+        cin >> value;
+        root = Delete(root, value);
+        break;
+      case 3:
+        cout << "Enter value to search: ";
+        cin >> value;
+        if (Search(root, value)) cout << "Value " << value << " is present in tree\n";
+        else cout << "Value " << value << " is not present in tree\n";
+        break;
+      case 4:
+        InOrderTraversal(root);
+        cout << endl;
+        break;
+      case 5:
+        DeleteTree(root);
+        exit(0);
+        break;
+      default:
+        cout << "Wrong option" << endl;
+    }
+  }
+  DeleteTree(root);
 }
 
 void ChooseArrayOperation(int ar[], int size){
@@ -244,7 +295,7 @@ void HandTypeArr(int size){
 
 
 void Exec(){
-  cout << "Choose what you`ll do:\n1 - array operations\n2 - hash operations\n3 - do list operations\n4 - do stack\n5 - do queue\n $ ";
+  cout << "Choose what you`ll do:\n1 - array operations\n2 - hash operations\n3 - do list operations\n4 - do stack\n5 - do queue\n6 - do BST\n $ ";
   char opt;
   int size;
   cin >> size;
@@ -254,7 +305,6 @@ void Exec(){
       cin >> size;
       cout << "Should we generate array(y), or enter it manually(n)? [y/n]: ";
       cin >> opt;
-      
       if(tolower(opt) == 'y') ArrGen(size);
       else if(tolower(opt) == 'n') HandTypeArr(size);
       else cout << "Wrong option, bye!";
@@ -270,6 +320,9 @@ void Exec(){
       break;
     case 5:
       DoQueue();
+      break;
+    case 6:
+      DoBST();
       break;
     default: cout << "Wrong option" << endl;
   }
