@@ -52,22 +52,37 @@ void cleanMatrix(vector<vector<int>> &graph) {
   }
 }
 
+// i can draw two edges at a time and count them so they wont redraw
+void dfsDraw(int node, vector<vector<int>> &graph, vector<bool> &visited, Vector2 pos, float distance) {
+    visited[node] = true;
 
-void dfsDraw(int node, vector<vector<int>> &graph, vector<bool> &visited, Vector2 pos, float radius, Color color) {
-  // do drawing in cirle like `round something. gotta use sinus and cosinus for this
-  visited[node] = true;
-  DrawCircleV(pos, radius, color);
-  int neighbors = graph[node].size();
-  float angleStep = (2 * PI) / neighbors;
-  for (int i = 0; i < neighbors; ++i) { 
-    int neighborIndex = graph[node][i];
-    if (neighborIndex == 1 and !visited[neighborIndex]) {
-      Vector2 nextPos = {pos.x + cosf(angleStep * i) * 100, pos.y + sinf(angleStep * i) * 100};
-      cout << "Node " << node + 1 << " position is: " << nextPos.x << " | " << nextPos.y << endl;
-      DrawLineV(pos, nextPos, color);
-      dfsDraw(i, graph, visited, nextPos, radius, color);
+    // Draw the current node circle
+    DrawCircleV(pos, 20, MAROON);
+    DrawText(TextFormat("%d", node), (int)pos.x - 5, (int)pos.y - 5, 20, WHITE);
+
+    int totalNodes = graph.size();
+    
+    for (int i = 0; i < totalNodes; ++i) {
+        // Only proceed if there is a connection AND we haven't been there
+        if (graph[node][i] == 1 && !visited[i]) {
+            
+            // Calculate direction based on neighbor index
+            // Using i * (2*PI / totalNodes) ensures neighbors 
+            // spread out in different directions
+            float angle = i * (2.0f * PI / totalNodes);
+            
+            Vector2 nextPos = {
+                pos.x + cosf(angle) * distance,
+                pos.y + sinf(angle) * distance
+            };
+
+            // Draw the line BEFORE recursing
+            DrawLineV(pos, nextPos, BLACK);
+
+            // Recurse to the next node
+            dfsDraw(i, graph, visited, nextPos, distance * 0.8f);
+        }
     }
-  }
 }
 
 void dfsDrawAllNodes(vector<vector<int>> &graph, Vector2 pos, float radius, Color color, int count) {
@@ -79,7 +94,7 @@ void dfsDrawAllNodes(vector<vector<int>> &graph, Vector2 pos, float radius, Colo
     float angleStep = start * (2 * PI) / count;
     cout << "Обхід в глибину вершини " << start + 1 << ':';
     vector<bool> visited(graph.size(), false);
-    dfsDraw(start, graph, visited, pos, radius, color);
+    dfsDraw(start, graph, visited, pos, 100);
     cout << endl;
   }
 }
