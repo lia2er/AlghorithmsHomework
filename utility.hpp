@@ -6,9 +6,8 @@
 #include "stack.hpp"
 #include "queue.hpp"
 #include "binaryTrees.hpp"
-#include <cstdlib>
+#include "graph.hpp"
 #include <ctime>
-#include <format>
 
 using namespace std;
 
@@ -253,6 +252,32 @@ void DoBST() {
   DeleteTree(root);
 }
 
+void DoGraph() {
+  int choice, value;
+  cout << "Enter num of nodes: ";
+  cin >> value;
+  cin.clear();
+  vector<vector<int>> graph = genMatrix(value);
+  cleanMatrix(graph);
+  while(true){
+    cout << "Choose operation on graph:\n1 - depth search\n2 - print matrix\n3 - exit\n $ ";
+    cin >> choice;
+    switch(choice){
+      case 1:
+        dfsAllNodes(graph);
+        break;
+      case 2:
+        printGraphMatrix(graph);
+        break;
+      case 3:
+        exit(0);
+        break;
+      default:
+        cout << "Wrong option" << endl;
+    }
+  }
+}
+
 void ChooseArrayOperation(int ar[], int size){
   cout << "What you`ll do?\n1 - sort\n2 - search\n $ ";
   int option;
@@ -287,7 +312,7 @@ void HandTypeArr(int size){
   int ar[size];
   cout<< "Now enter elements of array: \n";
   for(int i = 0; i < size; i++){
-    cout << format("Element num {}: ", i+1);
+    cout << "Element num " << i+1 << ": ";
     cin >> ar[i];
   }
   ChooseArrayOperation(ar, size);
@@ -295,7 +320,7 @@ void HandTypeArr(int size){
 
 
 void Exec(){
-  cout << "Choose what you`ll do:\n1 - array operations\n2 - hash operations\n3 - do list operations\n4 - do stack\n5 - do queue\n6 - do BST\n $ ";
+  cout << "Choose what you`ll do:\n1 - array operations\n2 - hash operations\n3 - do list operations\n4 - do stack\n5 - do queue\n6 - do BST\n7 - do graph\n $ ";
   char opt;
   int size;
   cin >> size;
@@ -323,6 +348,9 @@ void Exec(){
       break;
     case 6:
       DoBST();
+      break;
+    case 7:
+      DoGraph();
       break;
     default: cout << "Wrong option" << endl;
   }

@@ -14,6 +14,7 @@
 #include "stack.hpp"
 #include "queue.hpp"
 #include "binaryTrees.hpp"
+#include "graph.hpp"
 
 using namespace std;
 
@@ -61,7 +62,8 @@ Button button_Searching = { { 170, 10, 150, 50 }, gray };
 Button button_Hash = { { 330, 10, 80, 50 }, gray };
 Button button_Lists = { {420, 10, 60, 50}, gray};
 Button button_Stack = { {490, 10, 150, 50}, gray};
-Button button_Queue = { {650, 10, 150, 50}, gray};
+Button button_Queue = { {650, 10, 70, 50}, gray};
+Button button_BST   = { {730, 10, 70, 50}, gray};
 // sorting buttons
 Button button_SelectionSort = { { 10, 70, 150, 50 }, gray };
 Button button_BubbleSort = { { 10, 130, 150, 50 }, gray };
@@ -93,6 +95,10 @@ Button button_StackPush = button_SelectionSort,
 // queue buttons
 Button button_QueueEnqueue = button_SelectionSort,
        button_QueueDequeue = button_BubbleSort;
+// BST buttons
+Button button_BSTInsert = button_SelectionSort,
+       button_BSTDelete = button_BubbleSort,
+       button_BSTSearch = button_MergeSort;
 
 typedef struct Container{
   Rectangle rect;
@@ -122,8 +128,14 @@ vector<int> ParseStringToVector(string& input);
 void DrawLabelBox(Container bounds, string label, Color themeColor);
 void DrawList(DoubleListNode* head, Vector2 startPos, Color themeColor);
 void DrawSoleList(SoleListNode *head, Vector2 startPos, Color themeColor, bool isClose=false);
+void DrawBST(TreeNode *node, Vector2 pos, float hSpacing, int depth, Color nodeColor, Color lineColor);
+Color RandomColor();
 
 void GUI() {
+  cout << "Enter num of nodes: ";
+  cin >> searchTarget;
+  vector<vector<int>> graph = genMatrix(searchTarget);
+  cleanMatrix(graph);
 
   InitWindow(screenWidth, screenHeight, "SSHub");
   SetTargetFPS(60);
@@ -131,7 +143,7 @@ void GUI() {
   int selected[2]; 
   selected[0] = -1,
   selected[1] = -1;
-  
+
   string input;
   while (!WindowShouldClose()) {
 
@@ -147,6 +159,7 @@ void GUI() {
 
     DrawThings(selected, mouse);
     ButtonLogic(selected, mouse);
+    dfsDrawAllNodes(graph, {screenWidth/2, screenHeight/2}, 10, red, searchTarget);
 
     DrawText("Made by @JFenn28Uu", screenWidth-120, screenHeight-20, 10, black);
 
@@ -181,6 +194,10 @@ void ButtonLogic(int selected[], Vector2 mouse){
   
   if (CheckCollisionClick(mouse, button_Queue)) {
       selected[0] = 5;
+      selected[1] = -1;
+  }
+  if (CheckCollisionClick(mouse, button_BST)) {
+      selected[0] = 6;
       selected[1] = -1;
   }
   // Sorting action buttons logic
@@ -223,6 +240,12 @@ void ButtonLogic(int selected[], Vector2 mouse){
     if (CheckCollisionClick(mouse, button_QueueDequeue)) selected[1] = 1;
     //if (CheckCollisionClick(mouse, button_StackPeek)) selected[1] = 2;
   }
+  // BST actions
+  if (selected[0] == 6){
+    if (CheckCollisionClick(mouse, button_BSTInsert)) selected[1] = 0;
+    if (CheckCollisionClick(mouse, button_BSTDelete)) selected[1] = 1;
+    if (CheckCollisionClick(mouse, button_BSTSearch)) selected[1] = 2;
+  }
   // Actually coding actions
 
   // if (subSelected == 0 and pressedGenerateOrDoWorkButton) do SelectionSort
@@ -241,6 +264,7 @@ void DrawThings(int selected[], Vector2 mouse){
   DrawButton(button_Lists, mouse, selected[0] == 3 ? blue : gray, "List", false);
   DrawButton(button_Stack, mouse, selected[0] == 4 ? blue : gray, "Stack", false);
   DrawButton(button_Queue, mouse, selected[0] == 5 ? blue : gray, "Queue", false);
+  DrawButton(button_BST,   mouse, selected[0] == 6 ? blue : gray, "BST",   false);
   // Draw action buttons
   if (selected[0] == 0) {
     DrawButton(button_SelectionSort, mouse, selected[1] == 0 ? yellow : gray, "Selection", false);
@@ -274,6 +298,11 @@ void DrawThings(int selected[], Vector2 mouse){
   else if (selected[0] == 5) {
     DrawButton(button_QueueEnqueue, mouse, selected[1] == 0 ? yellow : gray, "Enqueue", false);
     DrawButton(button_QueueDequeue, mouse, selected[1] == 1 ? yellow : gray, "Dequeue", false);
+  }
+  else if (selected[0] == 6) {
+    DrawButton(button_BSTInsert, mouse, selected[1] == 0 ? yellow : gray, "Insert", false);
+    DrawButton(button_BSTDelete, mouse, selected[1] == 1 ? yellow : gray, "Delete", false);
+    DrawButton(button_BSTSearch, mouse, selected[1] == 2 ? yellow : gray, "Search", false);
   }
   else selected[1] = -1;
 
@@ -387,8 +416,35 @@ void DrawThings(int selected[], Vector2 mouse){
       hashValueString.erase();
     }
   }
-}
+  // BST realization
+  static string bstSearchResult;
+  if (selected[0] == 6) {
+    // always draw the tree
+    if (root != nullptr)
+      DrawBST(root, {(screenWidth / 2.0f) + 100, 220}, (screenWidth - 170) / 4.0f, 0, blue, gray);
 
+    if (selected[1] >= 0) {
+      if (GuiInputBox(container_TextInputBox, hashValueString, isValueFieldFocused, "Enter value...") 
+          and !hashValueString.empty())
+        hashValueInput = stoi(hashValueString);
+
+      if (!bstSearchResult.empty())
+        DrawLabelBox(container_SortedArrayOutputLabelBox, bstSearchResult, green);
+
+      if (DrawButton(button_Run2, mouse, yellow, "Run", true) and !hashValueString.empty()) {
+        int v = hashValueInput;
+        if (selected[1] == 0) { root = Insert(root, v); bstSearchResult = ""; }
+        if (selected[1] == 1) { root = Delete(root, v); bstSearchResult = ""; }
+        if (selected[1] == 2) {
+          bstSearchResult = Search(root, v)
+            ? "Value " + to_string(v) + " found in tree"
+            : "Value " + to_string(v) + " not found";
+        }
+        hashValueString.erase();
+      }
+    }
+  }
+} 
 
 bool DrawButton(Button btn, Vector2 mouse, Color hoverColor, string text, bool isFocused=false) {
   bool isHovered = CheckCollisionPointRec(mouse, btn.rect);
@@ -550,4 +606,44 @@ void DrawSoleList(SoleListNode *head, Vector2 startPos, Color themeColor, bool i
   if (isClose)
     DrawLineEx({startPos.x - gap, rect.y + nodeHeight + gap}, {startPos.x + maxStackWidth + gap, rect.y + nodeHeight + gap}, 2, yellow);
   rect = {0,0,0,0};
+}
+
+// Recursively draw BST.
+void DrawBST(TreeNode *node, Vector2 pos, float hSpacing, int depth, Color nodeColor, Color lineColor) {
+  if (node == nullptr or depth > 10) return;
+
+  const int nodeRadius = 20;
+  const int levelHeight = 50; 
+
+  if (node->left != nullptr) {
+    Vector2 childPos = { pos.x - hSpacing, pos.y + levelHeight };
+    DrawLineEx(pos, childPos, 2, lineColor);
+    DrawBST(node->left, childPos, hSpacing / 2.0f, depth + 1, nodeColor, lineColor);
+  }
+  if (node->right != nullptr) {
+    Vector2 childPos = { pos.x + hSpacing, pos.y + levelHeight };
+    DrawLineEx(pos, childPos, 2, lineColor);
+    DrawBST(node->right, childPos, hSpacing / 2.0f, depth + 1, nodeColor, lineColor);
+  }
+
+  DrawCircleV(pos, nodeRadius, nodeColor);
+  DrawCircleLines((int)pos.x, (int)pos.y, nodeRadius, yellow);
+
+  string label = to_string(node->data);
+  int textWidth = MeasureText(label.c_str(), 16);
+  DrawText(label.c_str(), (int)(pos.x - textWidth / 2.0f), (int)(pos.y - 8), 16, WHITE);
+}
+
+Color RandomColor() {
+  switch (GetRandomValue(1, 4)) {
+    case 1:
+      return red;
+    case 2:
+      return yellow;
+    case 3:
+      return blue;
+    case 4:
+      return green;
+  }
+  return red;
 }
