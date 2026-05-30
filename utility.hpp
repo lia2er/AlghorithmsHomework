@@ -78,7 +78,7 @@ void ChooseSearchMethod(int ar[], int size){
 }
 
 void DoHash(){
-  int size, choice, key, value;
+  int size, choice = 0, key, value;
   cout << "Enter table size: ";
   cin >> size;
   HashMapTable hashTable(size);
@@ -97,7 +97,7 @@ void DoHash(){
         cout << "enter a key to search for: ";
         cin >> key;
         value = hashTable.SearchKey(key);
-        if(value != 1) cout << "Found " << value << endl;
+        if(value != -1) cout << "Found " << value << endl;
         else cout << "Key wasn`t found" << endl;
         break;
       case 3:
@@ -194,7 +194,7 @@ void DoQueue() {
       case 2:
         if (front != nullptr) {
           front = dequeue(front);
-          if (front == nullptr) rear == nullptr;
+          if (front == nullptr) rear = nullptr;
         }
         break;
       case 3:
@@ -259,8 +259,9 @@ void DoGraph() {
   cin.clear();
   vector<vector<int>> graph = genMatrix(value);
   cleanMatrix(graph);
+  vector<vector<int>> weights = genWeights(graph);
   while(true){
-    cout << "Choose operation on graph:\n1 - depth search\n2 - print matrix\n3 - exit\n $ ";
+    cout << "Choose operation on graph:\n1 - depth search\n2 - print matrix\n3 - do Prim algh.\n4 - do Dijkstra\n5 - exit\n $ ";
     cin >> choice;
     switch(choice){
       case 1:
@@ -270,6 +271,14 @@ void DoGraph() {
         printGraphMatrix(graph);
         break;
       case 3:
+        primMST(weights, graph.size());
+        break;
+      case 4:
+        cout << "Enter start vertex: ";
+        cin >> value;
+        dijkstra(weights, value - 1, graph.size());
+        break;
+      case 5:
         exit(0);
         break;
       default:
@@ -301,23 +310,24 @@ void ArrGen(int size){
   cin >> seed;
   srand(seed);
   
-  int ar[size];
+  int* ar = new int[size];
   for(int i = 0; i<size; i++) ar[i] = rand()%20;
   
   PrintArray(ar, size, false);
   ChooseArrayOperation(ar, size);
+  delete[] ar;
 }
 
 void HandTypeArr(int size){
-  int ar[size];
+  int* ar = new int[size];
   cout<< "Now enter elements of array: \n";
   for(int i = 0; i < size; i++){
     cout << "Element num " << i+1 << ": ";
     cin >> ar[i];
   }
   ChooseArrayOperation(ar, size);
+  delete[] ar;
 }
-
 
 void Exec(){
   cout << "Choose what you`ll do:\n1 - array operations\n2 - hash operations\n3 - do list operations\n4 - do stack\n5 - do queue\n6 - do BST\n7 - do graph\n $ ";
@@ -356,12 +366,9 @@ void Exec(){
   }
 }
 
-// things for vectors, everything else is the same
-
 vector<int> ArrGenV(int size=10, int cap=100){
   srand(time(0));
   vector<int> ar;
   for(int i = 0; i<size; i++) ar.push_back(rand()%cap);
   return ar;
 }
-
