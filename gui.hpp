@@ -2,7 +2,6 @@
 #include <iostream>
 #include <raylib.h>
 #include <string>
-#include <ranges>
 #include <vector>
 #include <format>
 #include <algorithm>
@@ -42,6 +41,7 @@ SoleListNode *QueueFront = nullptr,
              *QueueRear = nullptr;
 int maxStackWidth = 0;
 TreeNode *root = nullptr;
+GraphState graphState;
 
 const Color green = {0x98, 0x97, 0x1a, 255},
       yellow = {0xd7, 0x99, 0x21, 255},
@@ -57,13 +57,21 @@ typedef struct Button {
 } Button;
 
 // action buttons
-Button button_Sorting = { { 10, 10, 150, 50 }, gray };
-Button button_Searching = { { 170, 10, 150, 50 }, gray };
-Button button_Hash = { { 330, 10, 80, 50 }, gray };
-Button button_Lists = { {420, 10, 60, 50}, gray};
-Button button_Stack = { {490, 10, 150, 50}, gray};
-Button button_Queue = { {650, 10, 70, 50}, gray};
-Button button_BST   = { {730, 10, 70, 50}, gray};
+Button button_Sorting = { { 10, 10, 120, 50 }, gray };
+Button button_Searching = { { 135, 10, 120, 50 }, gray };
+Button button_Hash = { { 260, 10, 65, 50 }, gray };
+Button button_Lists = { { 330, 10, 55, 50 }, gray };
+Button button_Stack = { { 390, 10, 100, 50 }, gray };
+Button button_Queue = { { 495, 10, 75, 50 }, gray };
+Button button_BST = { { 575, 10, 60, 50 }, gray };
+// Graph buttons (nav + actions)
+Button button_Graph = { { 640, 10, 70, 50 }, gray };
+Button button_GraphAddNode = { { 10, 70, 150, 50 }, gray };
+Button button_GraphRemove = { { 10, 130, 150, 50 }, gray };
+Button button_GraphAddEdge = { { 10, 190, 150, 50 }, gray };
+Button button_GraphRunDFS = { { 10, 250, 150, 50 }, gray };
+Button button_GraphDFSPrev = { { 10, 310, 70, 50 }, gray };
+Button button_GraphDFSNext = { { 90, 310, 70, 50 }, gray };
 // sorting buttons
 Button button_SelectionSort = { { 10, 70, 150, 50 }, gray };
 Button button_BubbleSort = { { 10, 130, 150, 50 }, gray };
@@ -132,19 +140,15 @@ void DrawBST(TreeNode *node, Vector2 pos, float hSpacing, int depth, Color nodeC
 Color RandomColor();
 
 void GUI() {
-  cout << "Enter num of nodes: ";
-  cin >> searchTarget;
-  vector<vector<int>> graph = genMatrix(searchTarget);
-  cleanMatrix(graph);
-
   InitWindow(screenWidth, screenHeight, "SSHub");
   SetTargetFPS(60);
-  
+
+  GInitExample(graphState, blue);
+
   int selected[2]; 
   selected[0] = -1,
   selected[1] = -1;
 
-  string input;
   while (!WindowShouldClose()) {
 
     Vector2 mouse = GetMousePosition();
@@ -159,7 +163,6 @@ void GUI() {
 
     DrawThings(selected, mouse);
     ButtonLogic(selected, mouse);
-    dfsDrawAllNodes(graph, {screenWidth/2, screenHeight/2}, 10, red, searchTarget);
 
     DrawText("Made by @JFenn28Uu", screenWidth-120, screenHeight-20, 10, black);
 
@@ -199,6 +202,11 @@ void ButtonLogic(int selected[], Vector2 mouse){
   if (CheckCollisionClick(mouse, button_BST)) {
       selected[0] = 6;
       selected[1] = -1;
+  }
+  if (CheckCollisionClick(mouse, button_Graph)) {
+      selected[0] = 7;
+      selected[1] = -1;
+      graphState.mode = GMODE_IDLE;
   }
   // Sorting action buttons logic
   if (selected[0] == 0){
@@ -246,6 +254,28 @@ void ButtonLogic(int selected[], Vector2 mouse){
     if (CheckCollisionClick(mouse, button_BSTDelete)) selected[1] = 1;
     if (CheckCollisionClick(mouse, button_BSTSearch)) selected[1] = 2;
   }
+  // Graph actions
+  if (selected[0] == 7) {
+    if (CheckCollisionClick(mouse, button_GraphAddNode)) { selected[1] = 0; graphState.mode = GMODE_ADD_NODE; }
+    if (CheckCollisionClick(mouse, button_GraphRemove))  { selected[1] = 1; graphState.mode = GMODE_REMOVE; }
+    if (CheckCollisionClick(mouse, button_GraphAddEdge)) { selected[1] = 2; graphState.mode = GMODE_ADD_EDGE_A; graphState.edgeStartA = -1; }
+    if (CheckCollisionClick(mouse, button_GraphRunDFS)) {
+      selected[1] = 3;
+      if (graphState.mode != GMODE_RUN_DFS) {
+        graphState.mode = GMODE_RUN_DFS;
+        GResetDFS(graphState, blue);
+        auto adj = GBuildAdj((int)graphState.nodes.size(), graphState.edges);
+        graphState.dfsSteps = GGenDFS(graphState.dfsStart, (int)graphState.nodes.size(), adj, graphState.edges);
+      } else {
+        graphState.mode = GMODE_IDLE;
+        GResetDFS(graphState, blue);
+      }
+    }
+    if (CheckCollisionClick(mouse, button_GraphDFSPrev) && !graphState.nodes.empty())
+      graphState.dfsStart = (graphState.dfsStart - 1 + (int)graphState.nodes.size()) % (int)graphState.nodes.size();
+    if (CheckCollisionClick(mouse, button_GraphDFSNext) && !graphState.nodes.empty())
+      graphState.dfsStart = (graphState.dfsStart + 1) % (int)graphState.nodes.size();
+  }
   // Actually coding actions
 
   // if (subSelected == 0 and pressedGenerateOrDoWorkButton) do SelectionSort
@@ -265,6 +295,7 @@ void DrawThings(int selected[], Vector2 mouse){
   DrawButton(button_Stack, mouse, selected[0] == 4 ? blue : gray, "Stack", false);
   DrawButton(button_Queue, mouse, selected[0] == 5 ? blue : gray, "Queue", false);
   DrawButton(button_BST,   mouse, selected[0] == 6 ? blue : gray, "BST",   false);
+  DrawButton(button_Graph, mouse, selected[0] == 7 ? blue : gray, "Graph", false);
   // Draw action buttons
   if (selected[0] == 0) {
     DrawButton(button_SelectionSort, mouse, selected[1] == 0 ? yellow : gray, "Selection", false);
@@ -303,6 +334,17 @@ void DrawThings(int selected[], Vector2 mouse){
     DrawButton(button_BSTInsert, mouse, selected[1] == 0 ? yellow : gray, "Insert", false);
     DrawButton(button_BSTDelete, mouse, selected[1] == 1 ? yellow : gray, "Delete", false);
     DrawButton(button_BSTSearch, mouse, selected[1] == 2 ? yellow : gray, "Search", false);
+  }
+  else if (selected[0] == 7) {
+    DrawButton(button_GraphAddNode, mouse, selected[1] == 0 ? yellow : gray, "Add Node", false);
+    DrawButton(button_GraphRemove, mouse, selected[1] == 1 ? yellow : gray, "Remove", false);
+    DrawButton(button_GraphAddEdge, mouse, selected[1] == 2 ? yellow : gray, "Add Edge", false);
+    DrawButton(button_GraphRunDFS, mouse, selected[1] == 3 ? yellow : gray,
+               graphState.mode == GMODE_RUN_DFS ? "Stop DFS" : "Run DFS", false);
+    DrawButton(button_GraphDFSPrev, mouse, gray, "<", false);
+    DrawButton(button_GraphDFSNext, mouse, gray, ">", false);
+    if (!graphState.nodes.empty())
+      DrawText(to_string(graphState.dfsStart + 1).c_str(), 82, 323, 20, yellow);
   }
   else selected[1] = -1;
 
@@ -443,6 +485,35 @@ void DrawThings(int selected[], Vector2 mouse){
         hashValueString.erase();
       }
     }
+  }
+  // Graph
+  if (selected[0] == 7) {
+    Rectangle canvas = { 170, 70, (float)(screenWidth - 170), (float)(screenHeight - 70) };
+    GUpdate(graphState, mouse, GetFrameTime(), canvas, green, yellow, blue);
+    GDraw(graphState, mouse, gray, green, red, blue, yellow, WHITE);
+
+    // visit order
+    if (!graphState.visitOrder.empty())
+      DrawLabelBox({(Rectangle){170, (float)(screenHeight-60), (float)(screenWidth-170), 40}},
+                   "DFS: " + graphState.visitOrder, green);
+
+    // hint
+    const char* hint = "";
+    switch (graphState.mode) {
+      case GMODE_ADD_NODE:   hint = "Click canvas to add a node"; break;
+      case GMODE_ADD_EDGE_A: hint = "Click the first node"; break;
+      case GMODE_ADD_EDGE_B: hint = "Click the second node"; break;
+      case GMODE_REMOVE:     hint = "Click a node or edge to remove"; break;
+      case GMODE_RUN_DFS:    hint = "SPACE = pause/resume   R = restart"; break;
+      default:               hint = "Drag nodes to reposition"; break;
+    }
+    DrawText(hint, 180, screenHeight - 75, 16, yellow);
+
+    // legend
+    DrawLineEx({(float)(screenWidth-160), 80}, {(float)(screenWidth-120), 80}, 3, green);
+    DrawText("Tree edge", screenWidth-115, 73, 14, WHITE);
+    DrawLineEx({(float)(screenWidth-160),100}, {(float)(screenWidth-120),100}, 3, red);
+    DrawText("Back edge", screenWidth-115, 93, 14, WHITE);
   }
 } 
 
