@@ -94,17 +94,18 @@ void cleanMatrix(vector<vector<int>> &graph) {
 }
 
 vector<vector<int>> genWeights(vector<vector<int>> &graph) {
-  for (int i = 0; i < graph.size(); ++i) {
-    for (int j = 0; j < graph[i].size(); ++j)
+  vector<vector<int>> weights = graph;
+  for (int i = 0; i < weights.size(); ++i) {
+    for (int j = 0; j < weights[i].size(); ++j)
     {
-      if (graph[i][j] == 1)
+      if (weights[i][j] == 1)
       {
-        graph[i][j] = GetRandomValue(1, 100);
-        graph[j][i] = graph[i][j];
+        weights[i][j] = GetRandomValue(1, 100);
+        weights[j][i] = weights[i][j];
       }
     }
   }
-  return graph;
+  return weights;
 }
 
 // i can draw two edges at a time and count them so they wont redraw
