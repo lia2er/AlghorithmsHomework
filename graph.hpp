@@ -2,6 +2,7 @@
 #include <cmath>
 #include <iostream>
 #include <vector>
+#include <climits>
 #include <raylib.h>
 
 using namespace std;
@@ -52,6 +53,20 @@ void cleanMatrix(vector<vector<int>> &graph) {
   }
 }
 
+vector<vector<int>> genWeights(vector<vector<int>> &graph) {
+  for (int i = 0; i < graph.size(); ++i) {
+    for (int j = 0; j < graph[i].size(); ++j)
+    {
+      if (graph[i][j] == 1)
+      {
+        graph[i][j] = GetRandomValue(1, 100);
+        graph[j][i] = graph[i][j];
+      }
+    }
+  }
+  return graph;
+}
+
 // i can draw two edges at a time and count them so they wont redraw
 void dfsDraw(int node, vector<vector<int>> &graph, vector<bool> &visited, Vector2 pos, float distance) {
     visited[node] = true;
@@ -97,4 +112,89 @@ void dfsDrawAllNodes(vector<vector<int>> &graph, Vector2 pos, float radius, Colo
     dfsDraw(start, graph, visited, pos, 100);
     cout << endl;
   }
+}
+
+int findMinVertex(int vertices, vector<int> &key, vector<bool> &mstSet)
+{
+  int minKey = INT_MAX;
+  int minVertex = -1;
+
+  for (int v = 0; v < vertices; ++v)
+  {
+    if (!mstSet[v] and key[v] < minKey)
+    {
+      minKey = key[v];
+      minVertex = v;
+    }
+  }
+  return minVertex;
+}
+
+void printMST(vector<int> &parent, vector<vector<int>> &graph, int vertices)
+{
+  cout << "Minimal Spaning Tree: \n";
+  for (int i = 1; i < vertices; ++i)
+    cout << parent[i] + 1 << " - " << i + 1 << " weight: " << graph[i][parent[i]] << endl;
+}
+
+void primMST(vector<vector<int>> &graph, int vertices)
+{
+  vector<int> parent(vertices);
+  vector<int> key(vertices, INT_MAX);
+  vector<bool> mstSet(vertices, false);
+
+  key[0] = 0;
+  parent[0] = -1;
+
+  for (int count = 0; count < vertices - 1; ++count)
+  {
+    int u = findMinVertex(vertices, key, mstSet);
+    mstSet[u] = true;
+
+    for (int v = 0; v  < vertices; ++v)
+    {
+      if (graph[u][v] and !mstSet[v] and graph[u][v] < key[v])
+      {
+        parent[v] = u;
+        key[v] = graph[u][v];
+      }
+    }
+  }
+  printMST(parent, graph, vertices);
+}
+
+int findMinDist(vector<int> &distance, vector<bool> &visited, int vertices)
+{
+  int minVertex = -1;
+  for (int v = 0; v < vertices; ++v)
+  {
+    if (!visited[v] && (minVertex == -1 || distance[v] < distance[minVertex]))
+      minVertex = v;
+  }
+  return minVertex;
+}
+
+void dijkstra(vector<vector<int>> &graph, int start, int vertices)
+{
+  vector<int> distance(vertices, INT_MAX);
+  vector<bool> visited(vertices, false);
+
+  distance[start] = 0;
+
+  for (int count = 0; count < vertices - 1; ++count)
+  {
+    int u = findMinDist(distance, visited, vertices);
+    visited[u] = true;
+
+    for (int v = 0; v < vertices; ++v)
+    {
+      if (!visited[v] && graph[u][v] && distance[u] != INT_MAX &&
+        distance[u] + graph[u][v] < distance[v])
+        distance[v] = distance[u] + graph[u][v];
+    }
+  }
+
+  cout << "Найкоротші відстані від вершини " << start + 1 << ":" << endl;
+  for (int i = 0; i < vertices; ++i)
+    cout << "Вершина " << i + 1 << ": " << distance[i] << endl;
 }
