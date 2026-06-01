@@ -132,11 +132,6 @@ void DrawBST(TreeNode *node, Vector2 pos, float hSpacing, int depth, Color nodeC
 Color RandomColor();
 
 void GUI() {
-  cout << "Enter num of nodes: ";
-  cin >> searchTarget;
-  vector<vector<int>> graph = genMatrix(searchTarget);
-  cleanMatrix(graph);
-
   InitWindow(screenWidth, screenHeight, "SSHub");
   SetTargetFPS(60);
   
@@ -159,7 +154,6 @@ void GUI() {
 
     DrawThings(selected, mouse);
     ButtonLogic(selected, mouse);
-    dfsDrawAllNodes(graph, {screenWidth/2, screenHeight/2}, 10, red, searchTarget);
 
     DrawText("Made by @JFenn28Uu", screenWidth-120, screenHeight-20, 10, black);
 

@@ -260,25 +260,50 @@ void DoGraph() {
   vector<vector<int>> graph = genMatrix(value);
   cleanMatrix(graph);
   vector<vector<int>> weights = genWeights(graph);
-  while(true){
-    cout << "Choose operation on graph:\n1 - depth search\n2 - print matrix\n3 - do Prim algh.\n4 - do Dijkstra\n5 - exit\n $ ";
+  while(true)
+  {
+    cout << "Choose operation on graph:\n1 - depth search\n2 - breadth search\n3 - Kruskal MST\n4 - print matrix\n5 - print weights\n6 - prim\n7 - dijkastra\n8 - exit\n $";
     cin >> choice;
     switch(choice){
       case 1:
         dfsAllNodes(graph);
         break;
       case 2:
+        bfsAllNodes(graph);
+        break;
+      case 3: {
+        int n = weights.size();
+        vector<KEdge> kedges;
+        for (int i = 0; i < n; ++i)
+          for (int j = i + 1; j < n; ++j)
+            if (weights[i][j] != 0)
+              kedges.push_back({i, j, weights[i][j]});
+        vector<KEdge> mst = kruskalMST(n, kedges);
+        if (mst.empty()) { cout << "Graph is not connected" << endl; break; }
+        int total = 0;
+        cout << "Minimum spanning tree:" << endl;
+        for (KEdge &e : mst) {
+          cout << e.a + 1 << " - " << e.b + 1 << "  weight: " << e.weight << endl;
+          total += e.weight;
+        }
+        cout << "Total weight: " << total << endl;
+        break;
+      }
+      case 4:
         printGraphMatrix(graph);
         break;
-      case 3:
+      case 5:
+        printWeightMatrix(weights);
+        break;
+      case 6:
         primMST(weights, graph.size());
         break;
-      case 4:
+      case 7:
         cout << "Enter start vertex: ";
         cin >> value;
         dijkstra(weights, value - 1, graph.size());
         break;
-      case 5:
+      case 8:
         exit(0);
         break;
       default:
